@@ -16,6 +16,8 @@ class PskXmlBridge extends EventEmitter {
 		this.receiver = new PskReporterReceiver();
 		const TTLCache = require('@isaacs/ttlcache');
 		this.receiver.spotCache = new TTLCache({ttl: config.pskreporter.quorumInterval});
+		this.receiver.restartConnection = () => {};   // fed by processSpot, never by the token stream
+		this.receiver.resetTimer = () => {};
 		this.pending = null;
 		this.receiver.on('spot', spot => {
 			if (this.pending) { spot._raw = this.pending.raw; spot._bridge = 'retrieve-xml'; this.pending.emitted = true; }
