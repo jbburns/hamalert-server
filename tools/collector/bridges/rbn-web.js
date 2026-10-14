@@ -8,7 +8,8 @@ const axios = require('axios');
 const config = require('../../../config_loader');
 const RbnReceiver = require('../../../rbn');
 
-const MODES = {1: 'CW', 2: 'PH', 5: 'FM', 10: 'PSK31', 11: 'RTTY', 12: 'BPSK', 30: 'PSK63', 31: 'PSK125', 34: 'FT8', 45: 'FT4'};
+const MODES = {"1": "CW", "2": "PHONE", "5": "FM", "10": "PSK31", "11": "RTTY", "12": "BPSK", "13": "GMSK", "14": "FSK", "15": "SSTV", "16": "MFSK", "17": "QPSK", "20": "EME", "21": "JT65", "22": "HELL", "23": "DOMINOEX", "24": "MT63", "25": "RTTYM", "26": "THOR", "27": "THROB", "28": "OLIVIA", "29": "CONTESTIA", "30": "PSK63", "31": "PSK125", "32": "JT9", "33": "OPERA", "34": "FT8", "35": "SIM31", "36": "PSK32", "37": "ROS", "38": "MSK144", "39": "FSK441", "40": "PSK", "41": "QPSK31", "42": "T10", "43": "SIM63", "44": "JS8", "45": "FT4", "999": "OTHER"};   // from spots.php?meta=1
+const SPEED_UNIT = {"1": "wpm", "2": "", "5": "", "10": "bps", "11": "bps", "12": "bps", "13": "bps", "14": "bps", "15": "", "16": "bps", "17": "bps", "20": "", "21": "", "22": "", "23": "", "24": "", "25": "bps", "26": "", "27": "", "28": "", "29": "", "30": "bps", "31": "bps", "32": "", "33": "", "34": "", "35": "", "36": "", "37": "", "38": "", "39": "", "40": "", "41": "", "42": "", "43": "", "44": "bps", "45": "", "999": ""};
 const TYPES = {1: 'CQ', 2: 'DX', 3: 'BEACON', 4: 'BEACON', 5: 'NCDXF B'};
 
 class RbnWebBridge extends EventEmitter {
@@ -58,7 +59,8 @@ class RbnWebBridge extends EventEmitter {
 		let hhmm = date.toISOString().substring(11, 16).replace(':', '');
 		let modeStr = MODES[mode] || `MODE${mode}`;
 		let marker = TYPES[type] || 'CQ';
-		let speed = (modeStr === 'CW') ? `${wpm} WPM` : `${wpm} BPS`;
+		let unit = (SPEED_UNIT[mode] || '').toUpperCase();
+		let speed = unit ? `${wpm} ${unit}` : '';
 		let line = `DX de ${de}-#:   ${freq}  ${dx}   ${modeStr}    ${db} dB  ${speed}  ${marker}      ${hhmm}Z`;
 		let raw = {id, de, freq, dx, db, wpm, time: timeStr, band, type, mode, epoch};
 		this.pending = {raw, date, emitted: false};

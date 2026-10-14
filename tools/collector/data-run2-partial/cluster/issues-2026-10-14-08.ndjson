@@ -1,0 +1,5 @@
+{"t":"2026-10-14T08:57:27.299Z","source":"cluster","spotId":"971961b6-0146-45e2-a278-6f171c08d2f4","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T08:58:27.344Z","source":"cluster","spotId":"bf9c8813-1e9d-45ae-96c3-bae1a717662f","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T08:58:27.344Z","source":"cluster","spotId":"cd2509f2-3a64-4e5c-ad9a-fe890607b7c8","code":"band-unresolved","severity":"warn","message":"no band for 4048905100 Hz","value":4048905100}
+{"t":"2026-10-14T08:58:27.344Z","source":"cluster","spotId":"cd2509f2-3a64-4e5c-ad9a-fe890607b7c8","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T08:59:27.653Z","source":"cluster","spotId":"12fc210d-2318-4061-a1b3-8459f55a7d35","code":"mode-missing","severity":"info","message":"no mode and no guess"}

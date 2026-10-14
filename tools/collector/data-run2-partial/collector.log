@@ -1,0 +1,371 @@
+collector: 3 h, sources sotawatch,pota,dstar,wwff,cluster,rbn,pskreporter, data /home/user/hamalert-server/tools/collector/data
+refdata: downloading https://www.sotadata.org.uk/summitslist.csv
+refdata: downloading https://pota.app/all_parks_ext.csv
+refdata: downloading https://wwff.co/wwff-data/wwff_directory.csv
+refdata: downloading https://www.iota-world.org/islands-on-the-air/downloads/download-file.html?path=fulllist.json
+refdata: 182280 summits, 96586 POTA parks, 68978 WWFF parks, 1178 IOTA groups
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+D-STAR group directory: seeded 2 static group(s), pending first fetch
+collector: started sotawatch, pota, dstar, wwff, cluster, rbn, pskreporter
+Refreshing SOTAwatch JSON feed
+D-STAR group directory: 8 QuadNet Smart Groups
+D-STAR QuadNet feed primed at offset 134199
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+PSK Reporter: unknown band for frequency NaN
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign SNEPER
+DXCC lookup blocked for spotter callsign KFS/A
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign STUEY3D
+DXCC lookup blocked for spotter callsign OT4E/A
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign RADIOHILL
+DXCC lookup blocked for spotter callsign RADIOHILL
+DXCC lookup blocked for spotter callsign RADIOHILL
+DXCC lookup blocked for spotter callsign IW5ALZ/Q
+DXCC lookup blocked for spotter callsign IW5ALZ/Q
+DXCC lookup blocked for spotter callsign KX4AZ/T
+DXCC lookup blocked for spotter callsign KX4AZ/T
+PSK Reporter: unknown band for frequency NaN
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ZL1RPC/F
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign SNEPER
+DXCC lookup blocked for spotter callsign KFS/A
+DXCC lookup blocked for spotter callsign KFS/A
+DXCC lookup blocked for spotter callsign KFS/A
+DXCC lookup blocked for spotter callsign SDRPLONSK
+DXCC lookup blocked for spotter callsign SDRPLONSK
+DXCC lookup blocked for spotter callsign SDRPLONSK
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+pskreporter xml: 1510 reports
+D-STAR dstarusers feed primed with 56 rows
+D-STAR node directory: 5124 QuadNet + 473 ircDDB modules
+No match: DX de DL8LAS-1-#:   18110.0  4X6TU   CW    5 dB  22 WPM  NCDXF B      0856Z
+No match: DX de S53A-#:   18110.0  4X6TU   CW    12 dB  20 WPM  NCDXF B      0856Z
+No match: DX de LZ4UX-#:   18110.0  OH2B   CW    11 dB  21 WPM  NCDXF B      0856Z
+No match: DX de LZ4UX-#:   21150.0  4X6TU   CW    14 dB  20 WPM  NCDXF B      0856Z
+No match: DX de MM9PSY-#:   18110.0  OH2B   CW    3 dB  22 WPM  NCDXF B      0856Z
+No match: DX de M9PSY-2-#:   18110.0  OH2B   CW    2 dB  21 WPM  NCDXF B      0856Z
+No match: DX de DC8YZ-#:   21150.0  4X6TU   CW    11 dB  22 WPM  NCDXF B      0856Z
+No match: DX de ON6URE-#:   18110.0  CS3B   CW    4 dB  23 WPM  NCDXF B      0856Z
+No match: DX de PT2FHC-#:   14100.0  LU4AA   CW    4 dB  24 WPM  NCDXF B      0856Z
+No match: DX de SZ1A-#:   18110.0  CS3B   CW    8 dB  20 WPM  NCDXF B      0856Z
+No match: DX de DM5GG-#:   24930.0  4X6TU   CW    17 dB  21 WPM  NCDXF B      0856Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+[2026-10-14T08:57:27.081Z] spots pota=16/16 sotawatch=2/2 pskreporter=1462/1462/d48 quadnet=1/1 dstarusers=2/2 rbn=89/89/d11 | http 31 ok 0 err
+No match: DX de MM9PSY-#:   28268.90  SV6DBG   RTTY    12 dB  45 BPS  BEACON      0857Z
+No match: DX de MM0ZBH-#:   24929.9  CS3B   CW    13 dB  19 WPM  NCDXF B      0857Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+[2026-10-14T08:58:27.081Z] spots pota=18/18 sotawatch=2/2 pskreporter=1462/1462/d48 quadnet=2/2 dstarusers=4/4 rbn=287/287/d13 cluster=3/3 | http 47 ok 0 err
+No match: DX de OE3KLU-#:   28188.0  OE3XAC   CW    6 dB  14 WPM  BEACON      0858Z
+No match: DX de K3GMQ-#:   28234.4  TE2K/B   CW    1 dB  18 WPM  BEACON      0858Z
+No match: DX de DF7GB-#:   10129.5  IZ3DVW/B   CW    8 dB  15 WPM  BEACON      0858Z
+No match: DX de MM9PSY-#:   21149.0  IT9ATQ/B   CW    18 dB  10 WPM  BEACON      0858Z
+Refreshing SOTAwatch JSON feed
+No match: DX de EA5WU-#:   10129.5  IZ3DVW/B   CW    10 dB  15 WPM  BEACON      0858Z
+No match: DX de MM0ZBH-#:   21149.0  IT9ATQ/B   CW    23 dB  10 WPM  BEACON      0858Z
+No match: DX de EI4HQ-#:   28203.0  IT9BRY/B   CW    2 dB  25 WPM  BEACON      0858Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+Refreshing SOTAwatch JSON feed
+[2026-10-14T08:59:27.082Z] spots pota=22/22 sotawatch=4/4 pskreporter=1462/1462/d48 quadnet=4/4 dstarusers=9/9 rbn=468/468/d20 cluster=8/8 | http 64 ok 0 err
+No match: DX de ES5PC-#:   28200.1  RR9O   CW    7 dB  23 WPM  NCDXF B      0859Z
+No match: DX de ES2RR-#:   14100.0  4X6TU   CW    9 dB  21 WPM  NCDXF B      0859Z
+No match: DX de DD5XX-#:   14065.0  IZ6RND/B   CW    12 dB  12 WPM  BEACON      0859Z
+No match: DX de G4ZFE-#:   10144.0  DK0WCY   CW    10 dB  17 WPM  BEACON      0859Z
+No match: DX de M9PCX-#:   14100.0  OH2B   CW    13 dB  22 WPM  NCDXF B      0859Z
+No match: DX de LZ4UX-#:   18110.0  4X6TU   CW    14 dB  21 WPM  NCDXF B      0859Z
+No match: DX de EI4HQ-#:   14100.0  OH2B   CW    30 dB  21 WPM  NCDXF B      0859Z
+No match: DX de DL8LAS-#:   18110.0  4X6TU   CW    13 dB  20 WPM  NCDXF B      0859Z
+No match: DX de MM9PSY-#:   14100.0  OH2B   CW    17 dB  20 WPM  NCDXF B      0859Z
+No match: DX de DL8LAS-3-#:   18110.0  4X6TU   CW    13 dB  20 WPM  NCDXF B      0859Z
+No match: DX de S53A-#:   21150.0  4X6TU   CW    16 dB  21 WPM  NCDXF B      0859Z
+No match: DX de YO2CK-#:   10129.5  IZ3DVW/B   CW    3 dB  16 WPM  BEACON      0859Z
+No match: DX de DL8TG-#:   10133.5  HB4FV/B   CW    4 dB  16 WPM  BEACON      0859Z
+No match: DX de EI4HQ-#:   21150.0  4X6TU   CW    11 dB  22 WPM  NCDXF B      0859Z
+No match: DX de MM0ZBH-#:   21150.0  4X6TU   CW    30 dB  19 WPM  NCDXF B      0859Z
+No match: DX de IT9GSF-#:   18110.0  CS3B   CW    4 dB  21 WPM  NCDXF B      0859Z
+No match: DX de S53A-#:   24930.0  4X6TU   CW    11 dB  19 WPM  NCDXF B      0859Z
+No match: DX de VU2TUM-#:   21150.1  OH2B   CW    10 dB  21 WPM  NCDXF B      0859Z
+No match: DX de DL9GTB-#:   18110.0  CS3B   CW    17 dB  22 WPM  NCDXF B      0859Z
+No match: DX de LZ4UX-#:   24930.0  4X6TU   CW    5 dB  22 WPM  NCDXF B      0859Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+[2026-10-14T09:00:27.083Z] spots pota=26/26 sotawatch=4/4 pskreporter=1462/1462/d48 quadnet=6/6 dstarusers=11/11 rbn=611/611/d40 cluster=14/14 | http 78 ok 0 err
+No match: DX de N2YCH-#:   18110.0  4U1UN   CW    3 dB  21 WPM  NCDXF B      0900Z
+No match: DX de MM9PSY-#:   28268.9  SV6DBG   CW    9 dB  12 WPM  BEACON      0900Z
+No match: DX de K3FEF-#:   18110.0  4U1UN   CW    6 dB  19 WPM  NCDXF B      0900Z
+No match: DX de K3GMQ-#:   21150.0  4U1UN   CW    11 dB  21 WPM  NCDXF B      0900Z
+No match: DX de MM0ZBH-#:   28268.7  SV6DBG   CW    8 dB  12 WPM  BEACON      0900Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+[2026-10-14T09:01:27.084Z] spots pota=29/29 sotawatch=4/4 pskreporter=1462/1462/d48 quadnet=11/11 dstarusers=13/13 rbn=806/806/d45 cluster=25/25 | http 94 ok 0 err
+No match: DX de DL8LAS-3-#:   18097.6  IK6BAK/B   CW    11 dB  12 WPM  BEACON      0901Z
+No match: DX de M9PCX-#:   21149.0  IT9ATQ/B   CW    2 dB  10 WPM  BEACON      0901Z
+No match: DX de EI4HQ-#:   10129.5  IZ3DVW/B   CW    8 dB  16 WPM  BEACON      0901Z
+No match: DX de DO4DXA-#:   10129.5  IZ3DVW/B   CW    11 dB  16 WPM  BEACON      0901Z
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+PSK Reporter: unknown band for frequency NaN
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign UB3AWW-SDR
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign ONL-ODK
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign UACNJ
+DXCC lookup blocked for spotter callsign OT4E/A
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DHL50GTH
+DXCC lookup blocked for spotter callsign DHL50GTH
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+DXCC lookup blocked for spotter callsign F4VTQ/U
+PSK Reporter: unknown band for frequency NaN
+PSK Reporter: unknown band for frequency NaN
+PSK Reporter: unknown band for frequency NaN
+PSK Reporter: unknown band for frequency NaN
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign RADIOHILL
+DXCC lookup blocked for spotter callsign RADIOHILL
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign SNAKESHARMER
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign ON6URE-TEL
+DXCC lookup blocked for spotter callsign GI3JMC/UBERSDR
+DXCC lookup blocked for spotter callsign AI4UC/T
+DXCC lookup blocked for spotter callsign PE1RDP-KIWI
+DXCC lookup blocked for spotter callsign K1RA-PI
+DXCC lookup blocked for spotter callsign UB3AWW-SDR
+DXCC lookup blocked for spotter callsign UB3AWW-SDR
+DXCC lookup blocked for spotter callsign UB3AWW-SDR
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign EA8-DF4UE
+DXCC lookup blocked for spotter callsign SNEPER
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign DIG647
+DXCC lookup blocked for spotter callsign AC0G/ND
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign ZL2005SWL
+DXCC lookup blocked for spotter callsign UACNJ
+DXCC lookup blocked for spotter callsign SDR/JN69BA
+DXCC lookup blocked for spotter callsign SDR/JN69BA
+DXCC lookup blocked for spotter callsign KFS/OMNI
+DXCC lookup blocked for spotter callsign KFS/OMNI
+DXCC lookup blocked for spotter callsign KFS/OMNI
+DXCC lookup blocked for spotter callsign KFS/OMNI
+DXCC lookup blocked for spotter callsign OT4E/A
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign DANTEKR
+DXCC lookup blocked for spotter callsign W3USR/06
+DXCC lookup blocked for spotter callsign W3USR/06
+PSK Reporter: unknown band for frequency NaN
+pskreporter xml: 1508 reports
+No match: DX de DK2GOX-#:   70161.6  LX0FOUR   CW    17 dB  10 WPM  BEACON      0901Z
+No match: DX de DK9IP-1-#:   10129.5  IZ3DVW/B   CW    11 dB  15 WPM  BEACON      0901Z
+No match: DX de VA4RAM-#:   28189.1  VE4TEN/B   CW    12 dB  13 WPM  BEACON      0901Z
+No match: DX de DD5XX-#:   18110.1  RR9O   CW    16 dB  23 WPM  NCDXF B      0901Z
+No match: DX de VE4DRK-#:   28188.9  VE4TEN/B   CW    12 dB  13 WPM  BEACON      0901Z
+Refreshing POTA JSON feed
+Refreshing POTA JSON feed
+[2026-10-14T09:02:27.084Z] spots pota=37/37 sotawatch=4/4 pskreporter=2931/2931/d87 quadnet=11/11 dstarusers=17/17 rbn=997/997/d54 cluster=29/29 | http 109 ok 0 err
+No match: DX de VU2PTT-#:   14100.0  4S7B   CW    20 dB  23 WPM  NCDXF B      0901Z
+No match: DX de DL8LAS-1-#:   18097.6  IK6BAK/B   CW    8 dB  12 WPM  BEACON      0902Z
+No match: DX de ON6ZQ-#:   10129.5  IZ3DVW/B   CW    4 dB  5 WPM  BEACON      0902Z
+No match: DX de DM5GG-#:   24930.0  4S7B   CW    5 dB  22 WPM  NCDXF B      0902Z
+No match: DX de EI4HQ-#:   28224.7  IT9EJW/B   CW    5 dB  11 WPM  BEACON      0902Z
+No match: DX de ES2RR-#:   18110.0  4X6TU   CW    12 dB  19 WPM  NCDXF B      0902Z
+No match: DX de G0KTN-#:   14100.0  OH2B   CW    20 dB  21 WPM  NCDXF B      0902Z
+No match: DX de G4ZFE-#:   14100.0  OH2B   CW    5 dB  20 WPM  NCDXF B      0902Z
+No match: DX de HB9DCO-#:   18110.0  OH2B   CW    18 dB  22 WPM  NCDXF B      0902Z
+No match: DX de DC8YZ-#:   18110.0  OH2B   CW    5 dB  22 WPM  NCDXF B      0902Z
+No match: DX de DL9GTB-#:   21150.0  4X6TU   CW    10 dB  22 WPM  NCDXF B      0902Z
+No match: DX de DL9GTB-#:   10129.5  IZ3DVW/B   CW    5 dB  15 WPM  BEACON      0902Z
+No match: DX de OE8TED-#:   21150.0  4X6TU   CW    23 dB  16 WPM  NCDXF B      0902Z
+No match: DX de EI4HQ-#:   18110.0  OH2B   CW    22 dB  22 WPM  NCDXF B      0902Z
+No match: DX de VU24DX-1-#:   21150.0  4X6TU   CW    17 dB  22 WPM  NCDXF B      0902Z
+No match: DX de OE9GHV-#:   14100.0  CS3B   CW    26 dB  22 WPM  NCDXF B      0902Z
+No match: DX de M9PSY-2-#:   21150.0  4X6TU   CW    6 dB  17 WPM  NCDXF B      0902Z
+No match: DX de SZ1A-#:   21150.0  OH2B   CW    9 dB  24 WPM  NCDXF B      0902Z
+No match: DX de DL8LAS-3-#:   24930.0  4X6TU   CW    8 dB  23 WPM  NCDXF B      0902Z

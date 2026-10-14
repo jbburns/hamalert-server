@@ -1,0 +1,15 @@
+{"t":"2026-10-14T09:00:26.347Z","source":"pota","spotId":"73368959-eee5-472d-82db-51caae742f7c","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.0580\"","value":"14.0580"}
+{"t":"2026-10-14T09:00:26.348Z","source":"pota","spotId":"87117cca-32eb-48b4-b36d-1a673e06498b","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.2920\"","value":"14.2920"}
+{"t":"2026-10-14T09:00:26.348Z","source":"pota","spotId":"f958981d-b1de-43e9-b311-f4dafbdef994","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.1870\"","value":"7.1870"}
+{"t":"2026-10-14T09:00:26.348Z","source":"pota","spotId":"f884f64b-49f7-42a5-a30f-a0a35ec94277","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.2880\"","value":"14.2880"}
+{"t":"2026-10-14T09:01:26.453Z","source":"pota","spotId":"7c93c101-99dc-407b-b739-cf23f4e07bd1","code":"frequency-string","severity":"info","message":"frequency arrived as string \"21.0740\"","value":"21.0740"}
+{"t":"2026-10-14T09:01:26.454Z","source":"pota","spotId":"1c71649f-a66a-4668-a173-9d55db9dc00e","code":"frequency-string","severity":"info","message":"frequency arrived as string \"21.0740\"","value":"21.0740"}
+{"t":"2026-10-14T09:01:26.454Z","source":"pota","spotId":"4286edf9-ede0-49d7-acf0-40133ccd2cde","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.0760\"","value":"7.0760"}
+{"t":"2026-10-14T09:02:26.353Z","source":"pota","spotId":"b65a9959-3786-4bba-89cc-3b206c64baca","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.0430\"","value":"7.0430"}
+{"t":"2026-10-14T09:02:26.353Z","source":"pota","spotId":"658d4425-6056-452a-8676-82cc2c1ce7f1","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.2540\"","value":"14.2540"}
+{"t":"2026-10-14T09:02:26.354Z","source":"pota","spotId":"8a4742f1-205d-4e1e-abc9-9c9cbc509d42","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.0740\"","value":"7.0740"}
+{"t":"2026-10-14T09:02:26.354Z","source":"pota","spotId":"a2d08ec9-cd34-4c51-975c-6564bd962305","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.0310\"","value":"7.0310"}
+{"t":"2026-10-14T09:02:26.355Z","source":"pota","spotId":"8ac336d8-3cac-4cef-bc67-3d4367c86ea6","code":"frequency-string","severity":"info","message":"frequency arrived as string \"21.0740\"","value":"21.0740"}
+{"t":"2026-10-14T09:02:26.355Z","source":"pota","spotId":"4fbce404-c205-4c32-961e-41ed1254bf01","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.0565\"","value":"14.0565"}
+{"t":"2026-10-14T09:02:26.355Z","source":"pota","spotId":"e027906b-ffcd-464d-bb0b-77fa0c81a41e","code":"frequency-string","severity":"info","message":"frequency arrived as string \"7.0760\"","value":"7.0760"}
+{"t":"2026-10-14T09:02:26.356Z","source":"pota","spotId":"78af317b-9c7f-4e9c-a776-8fa387470cc0","code":"frequency-string","severity":"info","message":"frequency arrived as string \"14.0740\"","value":"14.0740"}

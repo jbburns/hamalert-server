@@ -1,0 +1,12 @@
+{"t":"2026-10-14T08:56:56.876Z","source":"dstarusers","spotId":"9331d582-61b5-4068-aaba-2bff6cd9a4bf","code":"spotter-is-reflector","severity":"info","message":"reflector REF075 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:56:56.876Z","source":"dstarusers","spotId":"9331d582-61b5-4068-aaba-2bff6cd9a4bf","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}
+{"t":"2026-10-14T08:56:56.876Z","source":"dstarusers","spotId":"5947f289-c7a2-47d1-a340-898cdf0c7bda","code":"spotter-is-reflector","severity":"info","message":"reflector REF024 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:56:56.876Z","source":"dstarusers","spotId":"5947f289-c7a2-47d1-a340-898cdf0c7bda","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}
+{"t":"2026-10-14T08:57:27.096Z","source":"dstarusers","spotId":"4230653f-669e-4fa7-bbcc-69bc8c212ce7","code":"spotter-is-reflector","severity":"info","message":"reflector REF091 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:57:27.096Z","source":"dstarusers","spotId":"4230653f-669e-4fa7-bbcc-69bc8c212ce7","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}
+{"t":"2026-10-14T08:57:56.849Z","source":"dstarusers","spotId":"38c62393-0888-4c04-9871-0dd5644764a4","code":"spotter-is-reflector","severity":"info","message":"reflector REF030 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:57:56.849Z","source":"dstarusers","spotId":"38c62393-0888-4c04-9871-0dd5644764a4","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}
+{"t":"2026-10-14T08:58:57.032Z","source":"dstarusers","spotId":"57516550-01ad-463c-94c3-f56536433ef2","code":"spotter-is-reflector","severity":"info","message":"reflector REF049 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:58:57.032Z","source":"dstarusers","spotId":"57516550-01ad-463c-94c3-f56536433ef2","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}
+{"t":"2026-10-14T08:59:27.082Z","source":"dstarusers","spotId":"d2053655-cd5d-4c02-8019-06b6fadb0a47","code":"spotter-is-reflector","severity":"info","message":"reflector REF023 reported this itself; spotter omitted"}
+{"t":"2026-10-14T08:59:27.082Z","source":"dstarusers","spotId":"d2053655-cd5d-4c02-8019-06b6fadb0a47","code":"band-unknown","severity":"info","message":"D-STAR spot with neither frequency nor band"}

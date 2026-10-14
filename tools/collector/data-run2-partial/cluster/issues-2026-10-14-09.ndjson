@@ -1,0 +1,7 @@
+{"t":"2026-10-14T09:00:27.415Z","source":"cluster","spotId":"d0740d8c-1064-4f7c-9468-e822faa5783b","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T09:00:27.416Z","source":"cluster","spotId":"e9dc0183-da4d-4bb5-9fc0-bc4ea26bb298","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T09:00:27.416Z","source":"cluster","spotId":"edf7a4be-9664-4630-bccd-288b59ac73b0","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T09:00:27.416Z","source":"cluster","spotId":"9359a81d-2658-40af-a88d-62957b7ec9a6","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T09:00:27.416Z","source":"cluster","spotId":"58123c63-d11c-4ee2-b23d-081aad425762","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T09:01:27.297Z","source":"cluster","spotId":"c7ae844e-fca9-446f-956b-88222e51e857","code":"band-unresolved","severity":"warn","message":"no band for 368905000 Hz","value":368905000}
+{"t":"2026-10-14T09:01:27.297Z","source":"cluster","spotId":"c7ae844e-fca9-446f-956b-88222e51e857","code":"mode-missing","severity":"info","message":"no mode and no guess"}
