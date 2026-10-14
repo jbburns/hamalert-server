@@ -290,10 +290,17 @@ function convert(legacy, ctx) {
 	// D-STAR block
 	if (isDstar) {
 		let d = {};
-		let node = take('dvNode'); if (node) d.node = node;
+		// upstream writes reflectors as "REF030-C" but leaves area-routed destinations as "IR0CD C"
+		const place = (v, what) => {
+			if (!v) return v;
+			let n = String(v).trim().toUpperCase().replace(/[\s_]+/g, '-');
+			if (n !== v) issue(issues, 'dstar-place-unnormalized', 'info', `${what} "${v}" normalized to "${n}"`, {value: v});
+			return n;
+		};
+		let node = place(take('dvNode'), 'node'); if (node) d.node = node;
 		let gw = legacy.spotter && legacy.dvNode && legacy.spotter !== legacy.dvNode.split('-')[0] ? legacy.spotter : (legacy.spotter || undefined);
 		if (gw) d.gateway = gw;
-		let refl = take('dvReflector'); if (refl) d.reflector = refl;
+		let refl = place(take('dvReflector'), 'reflector'); if (refl) d.reflector = refl;
 		let rs = take('dvReflectorSource'); if (rs === 'dashboard') provenance['dstar.reflector'] = 'dashboard';
 		let g = take('dvGroup'); if (g) d.group = g;
 		let gn = take('dvGroupName'); if (gn) d.groupName = gn;
