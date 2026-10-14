@@ -6,6 +6,8 @@
   "dependencies": {
     "@isaacs/ttlcache": "^1.4.1",
     "@parse/node-apn": "^8.1.0",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "async": "^2.6.3",
     "async-exit-hook": "^1.1.2",
     "axios": "^1.18.0",
@@ -38,7 +40,9 @@
     "local-dev:down": "node tools/localDev.js --down",
     "seed-local": "MONGO_URL=mongodb://127.0.0.1:27117/hamalert node tools/seedLocalUser.js",
     "dstar-test": "node tools/dstarTest.js",
-    "dstar-nodes": "node tools/dstarNodeTest.js"
+    "dstar-nodes": "node tools/dstarNodeTest.js",
+    "collect": "node tools/collector/index.js",
+    "collect:report": "node tools/collector/report.js"
   },
   "author": "",
   "license": "ISC"
