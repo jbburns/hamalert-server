@@ -42,7 +42,8 @@
     "dstar-test": "node tools/dstarTest.js",
     "dstar-nodes": "node tools/dstarNodeTest.js",
     "collect": "node tools/collector/index.js",
-    "collect:report": "node tools/collector/report.js"
+    "collect:report": "node tools/collector/report.js",
+    "collect:reconvert": "node tools/collector/reconvert.js"
   },
   "author": "",
   "license": "ISC"

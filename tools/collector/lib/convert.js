@@ -91,10 +91,21 @@ function convert(legacy, ctx) {
 			else if (/-@$/.test(spotter.callsign)) { spotter.callsign = spotter.callsign.replace(/-@$/, ''); spotter.relay = 'web'; }
 		}
 		if (source === 'wwff' && /via RBN/i.test(comment || '')) spotter.kind = 'skimmer';
+		// skimmer/receiver instance suffix ("W1NT-6", "K1RA-4"): keep it apart from the callsign
+		let inst = /^([A-Z0-9\/]+)-(\d{1,2})$/.exec(spotter.callsign);
+		if (inst && spotter.kind === 'skimmer') { spotter.callsign = inst[1]; spotter.instance = inst[2]; }
 		let sc = E.cleanCallsign(spotter.callsign);
-		if (!sc.shapeOk && spotter.kind !== 'bot') issue(issues, 'spotter-shape', 'info', `spotter "${spotter.callsign}" does not look like a callsign`, {value: spotter.callsign});
-		spotter.isSelf = !!spot.baseCallsign && sc.base === spot.baseCallsign;
-		spot.spotter = spotter;
+		if (isDstar && /^(REF|XRF|DCS|XLX)[0-9A-Z]{3}$/.test(spotter.callsign)) {
+			// a reflector reporting its own module: there is no reporting station; the reflector is in dstar.reflector
+			issue(issues, 'spotter-is-reflector', 'info', `reflector ${spotter.callsign} reported this itself; spotter omitted`);
+			spotter = null;
+		} else if (!sc.shapeOk && spotter.kind !== 'bot') {
+			issue(issues, 'spotter-shape', 'info', `spotter "${spotter.callsign}" does not look like a callsign`, {value: spotter.callsign});
+		}
+		if (spotter) {
+			spotter.isSelf = !!spot.baseCallsign && sc.base === spot.baseCallsign;
+			spot.spotter = spotter;
+		}
 	} else {
 		issue(issues, 'spotter-missing', isDstar ? 'info' : 'warn', 'no spotter');
 	}

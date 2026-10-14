@@ -19,6 +19,7 @@
         "callsign": {"type": "string", "minLength": 1},
         "kind": {"type": "string", "enum": ["human", "skimmer", "bot", "gateway"]},
         "relay": {"type": "string"},
+        "instance": {"type": "string", "pattern": "^[0-9]{1,2}$"},
         "isSelf": {"type": "boolean"},
         "entity": {"$ref": "#/definitions/entity"},
         "state": {"type": "string"},
