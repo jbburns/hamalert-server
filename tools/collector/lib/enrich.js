@@ -56,7 +56,8 @@ const CALLSIGN_RE = /^(?:[A-Z0-9]{1,4}\/)?[A-Z0-9]{1,3}[0-9][A-Z0-9]{0,4}[A-Z](?
 
 function cleanCallsign(raw) {
 	let s = String(raw || '').toUpperCase().trim();
-	let cleaned = s.replace(/[^0-9A-Z\/]/g, '');
+	// strip whitespace and control characters only; a '-' can be a real part of the identifier (HB9AK-6)
+	let cleaned = s.replace(/[\s\x00-\x1f]/g, '').replace(/[^0-9A-Z\/-]/g, '');
 	return {cleaned, changed: cleaned !== s, shapeOk: CALLSIGN_RE.test(cleaned), base: hamutil.extractCanonicalCallsign(cleaned)};
 }
 
