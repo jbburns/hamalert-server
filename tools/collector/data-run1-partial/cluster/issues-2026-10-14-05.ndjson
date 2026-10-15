@@ -1,0 +1,10 @@
+{"t":"2026-10-14T05:50:45.142Z","source":"cluster","spotId":"29cafa25-879a-4318-8fee-315aeebaa15a","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T05:50:45.143Z","source":"cluster","spotId":"d0aba48c-8642-41a3-831b-db9357184792","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T05:51:45.126Z","source":"cluster","spotId":"cfb5d594-c903-4ec6-a63e-cd7bf0ad505a","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T05:51:45.127Z","source":"cluster","spotId":"b45b3856-a126-4d62-8478-9ef29c12adcd","code":"callsign-shape","severity":"warn","message":"callsign \"SWL\" does not look like a callsign","value":"SWL"}
+{"t":"2026-10-14T05:51:45.128Z","source":"cluster","spotId":"a5452cf4-5391-485c-9cb2-2f930c3d42e8","code":"spotter-shape","severity":"info","message":"spotter \"DXEU\" does not look like a callsign","value":"DXEU"}
+{"t":"2026-10-14T05:51:45.128Z","source":"cluster","spotId":"1353032c-35b1-4bc2-bcf0-21b46f6e643b","code":"spotter-shape","severity":"info","message":"spotter \"TEAMH4\" does not look like a callsign","value":"TEAMH4"}
+{"t":"2026-10-14T05:52:45.229Z","source":"cluster","spotId":"de8d7262-10c7-4337-a3fb-e2f9bbf066f2","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T05:52:45.229Z","source":"cluster","spotId":"c43e3510-dee5-4308-bbe2-e58af8031dac","code":"callsign-shape","severity":"warn","message":"callsign \"DXEUTEAM\" does not look like a callsign","value":"DXEUTEAM"}
+{"t":"2026-10-14T05:53:45.086Z","source":"cluster","spotId":"46112099-ef91-4839-bd47-1fb1959743af","code":"mode-missing","severity":"info","message":"no mode and no guess"}
+{"t":"2026-10-14T05:53:45.087Z","source":"cluster","spotId":"354f4010-9c57-41fb-bd69-4fb1633f0e49","code":"mode-missing","severity":"info","message":"no mode and no guess"}
