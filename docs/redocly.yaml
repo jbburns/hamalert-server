@@ -1,0 +1,10 @@
+# npx @redocly/cli lint   (run from docs/)
+extends:
+  - recommended
+apis:
+  api:
+    root: openapi.yaml
+  spot-model:
+    root: spot-model.yaml
+    rules:
+      no-empty-servers: off
