@@ -1,6 +1,6 @@
 # HamAlert Spot model: proposal from the source research
 
-Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
+Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6), 2026-10-15 with the API (section 7). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
 cluster, pskreporter, dstar, other-dv), real samples pulled the same day, the current code in
 `hamalert-server`, and the upstream D-STAR implementation. Everything below is a proposal for
 the new API contract, not a description of the current database.
@@ -43,6 +43,10 @@ Three conclusions fall out of this:
 ---
 
 ## 2. Proposed model
+
+The machine-readable version is `spot-model.yaml` (OpenAPI 3.1 components, no paths); the TypeScript
+below is the readable one and the two are kept in step. Producers, the enricher, the matcher, the
+streams, the webhook body and the HTTP API all share that one file.
 
 TypeScript, because the spec will be OpenAPI plus generated types. Field names are new where
 the old ones were misleading; section 4 maps old to new.
@@ -183,7 +187,7 @@ interface DstarDetail {
   ber?: number; silencePct?: number;
 }
 // DMR, YSF and other digital voice networks get their own detail types when they are added
-// (see sources/other-dv.md for the fields they would carry). Nothing in the base changes.
+// (see docs/research/other-dv.md for the fields they would carry). Nothing in the base changes.
 
 interface ClusterDetail {
   node?: string;                 // host the line came from
@@ -622,3 +626,140 @@ five converter and schema changes listed above.
   it (fixed).
 - Not exercised here: telnet line parsing on live bytes, RBN FT8/FT4 lines, the PSK Reporter
   stream schema, ircDDB. Those need a run on the production host.
+
+## 7. The API
+
+Everything the PHP site, the app's routes, the Telnet emulation and the upstream additions do
+today maps onto twelve resources. The contract is two files: `spot-model.yaml` (the schemas every
+stage shares, section 2) and `openapi.yaml` (the HTTP paths and the API-only schemas, which reference
+the first by `$ref`). Both lint clean with `npx @redocly/cli lint` from `docs/`, and `redocly bundle
+openapi.yaml` folds them into one document for publishing and type generation. This section records
+the shape and the reasoning, not every field. Backwards compatibility with any current route, payload or id is not a goal.
+
+### 7.1 Cross-cutting rules
+
+| Rule | Choice |
+| --- | --- |
+| Base path | `/v1`. Everything under it is JSON unless the path says otherwise. |
+| Auth | Bearer tokens. Opaque, one session per device, short-lived access token plus refresh token. No HTTP Basic, no password on every request. Sessions are listable and revocable; a password change or reset revokes the others. |
+| Errors | RFC 9457 `application/problem+json`. Validation errors carry `errors[]` with a JSON pointer per field. |
+| Lists | Cursor pagination (`cursor` in, `nextCursor` out). Never offsets. |
+| Time and frequency | RFC 3339 UTC strings and integer Hz everywhere, exactly as in `Spot`. |
+| Reference data | `ETag` on every response, `If-None-Match` from clients, `304` when unchanged. |
+| Open vocabularies | `source`, `mode`, provenance values are open strings. Clients tolerate unknown values. Closed enums are closed: `activity`, `action`, `spotter.kind`. |
+| Types | TypeScript types for server and clients are generated from the spec. Nothing hand-writes a request or response shape. |
+
+### 7.2 Resources
+
+```
+/auth/*                      login, refresh, logout, sessions, register (+confirm), password forgot/reset
+/account                     get, rename, delete; /password; /email (+confirm); /clublog
+/account/destinations        app templates, telnet, url (+secret), threema (+verify)
+/account/limits              four scoped rate limits + exceeded counter; /account/blocked-spotters
+/devices                     push registrations (ios | android | web)
+/triggers                    CRUD, enable toggle, helpers (Club Log unworked DXCC, SOTA complete candidates)
+/mutes                       list, create, delete one / all
+/spots                       matched history (cursor), delete, badge, /stream (SSE)
+/simulate                    synchronous test against this account's triggers
+/reference/*                 vocabularies, dxcc, sota, parks, iota, satellites (+orbits)
+/events, /satellites/passes  planned events, pass prediction
+/public/*, /health           stats, last spot, MySpot PNG, per-source feed health
+```
+
+**Account and destinations.** The account is the login, email and Club Log link. Destinations are
+where alerts go, one object with four parts: `app` (title and body templates), `telnet` (enabled,
+password), `url` (enabled, URL, HMAC secret), `threema` (id, verified). Secrets are write-only;
+the response says `secretSet: true`. Setting a new Threema id sends a verification code.
+
+**Devices.** A device is a push registration: platform, push token, name, `pushEnabled`, sound.
+Registration is idempotent on the push token. A device whose token the provider rejected shows
+`pushFailing: true` instead of silently dropping alerts, which is what happens today.
+
+**Limits.** Four scoped limits, each `{count, intervalSec}` or null: total, per callsign, per
+callsign+band+mode, per callsign+frequency+mode, plus `separateSotawatch`. Same semantics as
+`ratelimit.js`, named instead of positional. The exceeded counter is read-only with a reset
+endpoint. Blocked spotters are a plain callsign list, replaced whole.
+
+**Triggers.** One flat `conditions` map. Every key is optional, all present keys must hold, lists
+are OR within the list, `not*` lists exclude, ranges are `{from, to}`. Values match after
+enrichment, so `dxcc` and `band` apply to a cluster spot that reported neither.
+
+| Today | Spec | Why |
+| --- | --- | --- |
+| `dvEvent` | `activity` | The spot-level activity enum replaces the D-STAR-only event names. |
+| `wwffRef`, `wwffDivision` | `parkRef`, `parkPrefix`, plus `parkProgram`, `parkLocation` | POTA and WWFF are one `parks[]` block in the spot, so one set of conditions. |
+| `callsignDxcc` | `homeDxcc` | Matches the spot field name. |
+| `iotaGroupRef` | `iota` | Shorter, matches the spot field. |
+| `bandslot` | `bandSlot` | Same thing; the slot table moves to `/reference/vocabularies`. |
+| `timeFrom`/`timeTo` | `timeOfDay: {from, to}` | Range shape like the others; `from > to` wraps midnight. |
+| (none) | `modeDetail`, `frequency`, `spotterKind`, `selfSpot`, `satellite` | New fields in the spot that are worth matching on. |
+
+`options` carries what is not a condition: `ignoreGuessed` (skip the match when any conditioned
+field has guessed provenance), `clublogUnworked` (nightly sync of `conditions.dxcc`),
+`sotaCompleteAuto` (nightly sync of `conditions.summitRef`). `actions` is a set of
+`app | telnet | url | threema`. Read-only: `matchCount`, `lastMatchedAt`, `autoDisabled {at, reason}`.
+Replacing a trigger resets the count and clears `autoDisabled`; today's silent disable becomes
+visible.
+
+**Mutes.** Callsign plus optional band, mode or summit, with a duration. An identical mute is
+extended, not duplicated.
+
+**Matched spots.** `GET /spots` returns `MatchedSpot[]` newest first, cursor paginated, 24 h
+window, filterable by action. `MatchedSpot` is `{id, spot, matchedAt, triggers[{id, comment}],
+actions[], suppressed?[]}`. `suppressed` names why a recorded spot was not delivered
+(`limit`, `mute`, `blockedSpotter`), so the app can show "matched but muted" instead of nothing.
+`PUT /spots/badge` replaces today's badge reset. `GET /spots/stream` is server-sent events, one
+event per matched spot with `id` = matched spot id, resumable for 24 h with `Last-Event-ID`.
+This replaces polling and is what the web client and the app use when in the foreground.
+
+**Webhook.** The `url` action POSTs the `MatchedSpot` JSON. Headers:
+`X-HamAlert-Signature: sha256=<hex HMAC of the body>` with the account's secret, and
+`X-HamAlert-Delivery: <matched spot id>` for idempotency. Two retries on non-2xx; a destination
+that fails for 24 h is disabled and `lastError` is set on the destination. No query-string or
+form encoding, no legacy field names.
+
+**Simulate.** `POST /simulate` with a minimal raw spot (callsign plus whatever the test needs).
+The server enriches and matches it for this account only, sends the alerts, and returns the
+enriched spot, the triggers that matched, and near misses: enabled triggers that failed exactly
+one condition, with that condition named. That is what makes it useful as a trigger debugger.
+Limits and mutes do not apply to simulated spots.
+
+**Reference data.** Served by the API, written only by the reference loaders (§3b). Vocabularies
+(bands, band slots, modes, sources, actions, states, the registration question), DXCC entities,
+SOTA associations and summits, park programmes and parks, IOTA groups, the satellite catalogue
+with transmitters, and current orbital elements (OMM, Celestrak JSON shape) so clients can
+predict passes offline.
+
+**Planned events.** Read side only for now: `GET /events` with kind, callsign, time window and
+`near=lat,lon&radiusKm=` filters, and `GET /satellites/passes` for a location. The schemas are
+the ones in §3a. Triggers on planned events come later; when they do, the matcher consumes the
+same `PlannedEvent` record.
+
+**Public.** Daily stats per source and per action, last spot of a callsign, the MySpot PNG
+(HMAC-protected as today), and `/health` with per-source `lastSpotAt` and `ok | stale | down`.
+
+### 7.3 Telnet emulation
+
+Stays, because it is how logging programs consume HamAlert. It is not part of the HTTP spec. It
+is re-specified from DXSpider and CC Cluster conventions (login prompt, `set/json`, `show/dx`,
+`bye`) rather than from today's output, and its JSON mode emits `MatchedSpot`. Authentication
+is username plus the Telnet password from destinations.
+
+### 7.4 What is deliberately not there
+
+- No legacy routes, no Basic auth, no old spot or trigger ids. Clients are rewritten with the
+  server.
+- No per-field `guessed` booleans in the API; `provenance` carries that (§2) and
+  `options.ignoreGuessed` is the only trigger-level switch.
+- No WebSocket. SSE covers the push case with less machinery; the Telnet feed covers the rest.
+- No API rate limiting in the spec beyond `429` on the auth endpoints; that belongs to the
+  gateway.
+
+### 7.5 Open points
+
+- `bandSlot` names need the band plan table published in vocabularies; the current matcher's
+  `bandslot` list is the starting point.
+- `SimulatedSpot` is minimal; add fields as the simulator UI needs them.
+- The anti-spam registration question is kept; swap for a captcha if abuse returns.
+- Whether `Spot.rawText` is returned to clients or kept server-side (size, and it is the one field
+  that could leak a source's formatting quirks into the UI).

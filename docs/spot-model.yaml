@@ -1,0 +1,323 @@
+openapi: 3.1.0
+info:
+  title: HamAlert spot model
+  version: 0.1.0
+  summary: Schemas shared by producers, enricher, matcher, streams, webhook and the HTTP API.
+  description: |
+    Schema-only document (no paths). The HTTP API in openapi.yaml references these by
+    `$ref: './spot-model.yaml#/components/schemas/<Name>'`. See spot-model.md for the reasoning.
+    Times are RFC 3339 UTC strings; frequencies are integer Hz.
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
+components:
+  schemas:
+    # ---- scalar types
+    Callsign:
+      type: string
+      pattern: '^[A-Z0-9/-]{2,20}$'
+      description: Upper case; portable suffixes and prefixes allowed
+    SummitCode:
+      type: string
+      pattern: '^[A-Z0-9]{1,8}/[A-Z]{2}-[0-9]{3}$'
+    ParkCode:
+      type: string
+      pattern: '^[A-Z0-9]{1,5}-[0-9]{4,5}$'
+    IotaCode:
+      type: string
+      pattern: '^(AF|AN|AS|EU|NA|OC|SA)-[0-9]{3}$'
+    Band:
+      type: string
+      pattern: '^[0-9.]+(m|cm|mm)$'
+      description: '160m, 80m, 60m, 40m, 30m, 20m, 17m, 15m, 12m, 11m, 10m, 6m, 4m, 2m, 1.25m, 70cm, 33cm, 23cm, 13cm, 9cm, 6cm, 3cm, 1.25cm, 6mm, 4mm, 2.5mm, 2mm, 1mm (see /reference/vocabularies)'
+    BandSlot:
+      type: string
+      pattern: '^[0-9.]+(m|cm|mm)_[a-z0-9]+$'
+      description: 'Band plan segment, e.g. 40m_cw, 20m_ssb, 2m_fm (see /reference/vocabularies)'
+    Mode:
+      type: string
+      pattern: '^[a-z0-9]+$'
+      description: Normalised mode family (cw, ssb, fm, am, rtty, psk, ft8, ft4, jt, msk, dstar, dmr, c4fm, data, ...). Open vocabulary.
+    Source:
+      type: string
+      description: Open vocabulary; today sotawatch, pota, wwff, cluster, rbn, pskreporter, quadnet, ircddb, dstarusers, amsat, simulator
+    Activity:
+      type: string
+      enum: [on-air, qrt, beacon, monitoring]
+    Action:
+      type: string
+      enum: [app, telnet, url, threema]
+    # ---- spot blocks
+    Entity:
+      type: object
+      required: [dxcc, name]
+      properties:
+        dxcc: {type: integer}
+        name: {type: string}
+        continent: {type: string, enum: [AF, AN, AS, EU, NA, OC, SA]}
+        cq: {type: integer}
+        itu: {type: integer}
+    Spotter:
+      type: object
+      required: [callsign, kind, isSelf]
+      properties:
+        callsign: {type: string}
+        kind: {type: string, enum: [human, skimmer, bot, gateway]}
+        relay: {type: string, description: 'Service that carried a human spot (RBNHole, SMS, APRS2SOTA, ...)'}
+        instance: {type: string, pattern: '^[0-9]{1,2}$', description: 'Skimmer instance suffix, e.g. W1NT-6 → "6"'}
+        isSelf: {type: boolean}
+        entity: {$ref: '#/components/schemas/Entity'}
+        state: {type: string}
+        locator: {type: string}
+    SummitRef:
+      type: object
+      required: [program, ref, association, region]
+      properties:
+        program: {type: string, enum: [sota]}
+        ref: {$ref: '#/components/schemas/SummitCode'}
+        association: {type: string}
+        region: {type: string}
+        name: {type: string}
+        altitude: {type: integer}
+        points: {type: integer}
+        activationCount: {type: integer}
+        valid: {type: boolean}
+        latitude: {type: number}
+        longitude: {type: number}
+    ParkRef:
+      type: object
+      required: [program, ref, prefix]
+      properties:
+        program: {type: string, enum: [pota, wwff]}
+        ref: {$ref: '#/components/schemas/ParkCode'}
+        prefix: {type: string}
+        name: {type: string}
+        locations: {type: array, items: {type: string}}
+        latitude: {type: number}
+        longitude: {type: number}
+    IotaRef:
+      type: object
+      required: [ref]
+      properties:
+        ref: {$ref: '#/components/schemas/IotaCode'}
+        name: {type: string}
+    SignalReport:
+      type: object
+      properties:
+        snr: {type: integer, description: "dB"}
+        speed: {type: integer}
+        speedUnit: {type: string, enum: [wpm, bps]}
+        spotType: {type: string, enum: [cq, dx, beacon, ncdxf]}
+        senderLocator: {type: string}
+        software: {type: string}
+        spotterCount: {type: integer, description: "PSK Reporter: receivers that heard this transmission"}
+    DstarDetail:
+      type: object
+      properties:
+        node: {type: string, description: 'Repeater or hotspot with module, e.g. HB9AK-B'}
+        gateway: {type: string}
+        reflector: {type: string, description: 'Reflector or repeater module the node is linked to, e.g. REF030-C'}
+        group: {type: string, description: "QuadNet Smart Group callsign"}
+        groupName: {type: string}
+        duration: {type: number, description: "Transmission length in seconds"}
+        suffix: {type: string, maxLength: 4, description: 'MY suffix (the 4-character field), e.g. "ID51"'}
+        ber: {type: number, description: "Bit error rate percent"}
+        silencePct: {type: number}
+    TransmitterKind:
+      type: string
+      enum: [fm_voice, linear, cw_beacon, telemetry, aprs, sstv, datv, digipeater, other]
+    SatelliteDetail:
+      type: object
+      required: [name]
+      properties:
+        noradId: {type: integer}
+        name: {type: string}
+        amsatName: {type: string, description: 'AMSAT status key, per transponder, e.g. AO-91_[FM]'}
+        transmitterKind: {$ref: '#/components/schemas/TransmitterKind'}
+        uplinkHz: {type: integer}
+        downlinkHz: {type: integer}
+        inverting: {type: boolean}
+        report: {type: string, enum: [heard, telemetryOnly, notHeard, crewActive]}
+        reportPeriod: {type: integer, minimum: 0, maximum: 3}
+    ClusterDetail:
+      type: object
+      properties:
+        node: {type: string}
+        commentTruncated: {type: boolean, description: "Comment hit the 30-character cluster limit"}
+        format: {type: string, enum: [classic, cc11]}
+    Provenance:
+      type: object
+      description: |
+        Field path → how the value was obtained. Absent means the source reported it.
+        Guessed values (`guessed(field)` is true): `bandplan`, `comment`, `comment-word`, `comment-regex`, `module-letter`.
+        Derived but reliable: `directory`, `dashboard`, `decode`, `receive-clock`, `relay-unwrapped`, `reference`.
+        Keys use dotted paths, e.g. `mode`, `parks.0.ref`, `dstar.reflector`.
+      additionalProperties: {type: string, pattern: '^[a-z-]+$'}
+    Precision:
+      type: object
+      additionalProperties: false
+      properties:
+        time: {type: string, enum: [minute], description: "Source gave HH:MM only; seconds are 00"}
+        frequency: {type: string, enum: [khz], description: "Source gave kHz; Hz digits are 000"}
+    # ---- spot
+    Spot:
+      type: object
+      required: [id, activity, source, callsign, baseCallsign, time, receivedAt, provenance, precision]
+      properties:
+        id: {type: string, description: "Server-assigned, globally unique, time-ordered"}
+        activity: {$ref: '#/components/schemas/Activity'}
+        source: {$ref: '#/components/schemas/Source'}
+        sourceId: {type: string, description: "The source's own id for the spot, when it has one"}
+        client: {type: string, description: 'Client application that posted the spot, when the source carries it'}
+        callsign: {$ref: '#/components/schemas/Callsign', description: "As spotted, whitespace removed"}
+        baseCallsign: {type: string, description: "Prefixes and suffixes stripped"}
+        spotter: {$ref: '#/components/schemas/Spotter'}
+        time: {type: string, format: date-time, description: "When the activity happened, UTC"}
+        receivedAt: {type: string, format: date-time, description: "When HamAlert received it"}
+        frequency: {type: integer, minimum: 1, description: "Hz"}
+        band: {$ref: '#/components/schemas/Band'}
+        bandSlot: {$ref: '#/components/schemas/BandSlot'}
+        mode: {$ref: '#/components/schemas/Mode'}
+        modeDetail: {type: string, description: 'Specific mode as reported, e.g. FT8, JS8, DMR, YSF'}
+        comment: {type: string}
+        rawText: {type: string, description: "The source line or record as received"}
+        entity: {$ref: '#/components/schemas/Entity'}
+        homeEntity: {$ref: '#/components/schemas/Entity'}
+        states: {type: array, items: {type: string, pattern: '^[A-Z]{2}_[A-Z0-9]{2,3}$'}}
+        qsl: {type: array, items: {type: string, enum: [lotw, eqsl]}}
+        summit: {$ref: '#/components/schemas/SummitRef'}
+        parks: {type: array, minItems: 1, items: {$ref: '#/components/schemas/ParkRef'}}
+        iota: {$ref: '#/components/schemas/IotaRef'}
+        signal: {$ref: '#/components/schemas/SignalReport'}
+        dstar: {$ref: '#/components/schemas/DstarDetail'}
+        satellite: {$ref: '#/components/schemas/SatelliteDetail'}
+        cluster: {$ref: '#/components/schemas/ClusterDetail'}
+        provenance: {$ref: '#/components/schemas/Provenance'}
+        precision: {$ref: '#/components/schemas/Precision'}
+    MatchedSpot:
+      type: object
+      description: One spot that matched one or more of the account's triggers. This is also the webhook body.
+      required: [id, spot, matchedAt, triggers, actions]
+      properties:
+        id: {type: string, description: "Matched spot id; the SSE event id and the webhook delivery id"}
+        spot: {$ref: '#/components/schemas/Spot'}
+        matchedAt: {type: string, format: date-time}
+        triggers:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [id]
+            properties:
+              id: {type: string}
+              comment: {type: string}
+        actions: {type: array, items: {$ref: '#/components/schemas/Action'}, description: "Union of the matched triggers' actions"}
+        suppressed:
+          type: array
+          items: {type: string, enum: [limit, mute, blockedSpotter]}
+          description: Present when the spot was recorded but not delivered
+
+    # ---------------------------------------------------------- simulate
+    # ---- planned events
+    EventKind:
+      type: string
+      enum: [activation, dxpedition, contest, special-event, ariss-contact, sstv]
+    PlannedEvent:
+      type: object
+      required: [id, source, kind, callsigns, title, start, timePrecision, references, frequencies, firstSeenAt, updatedAt, cancelled]
+      properties:
+        id: {type: string}
+        source: {type: string, description: "sota, wwff, pota, pnp, ng3k, arrl-se, ariss, ariss-sstv, illw, contestcal; open"}
+        kind: {$ref: '#/components/schemas/EventKind'}
+        callsigns: {type: array, items: {$ref: '#/components/schemas/Callsign'}, description: "Empty for contests"}
+        title: {type: string}
+        start: {type: string, format: date-time}
+        end: {type: string, format: date-time}
+        timePrecision: {type: string, enum: [second, minute, day]}
+        recurrence: {type: string, enum: [daily-window, continuous, unknown]}
+        references:
+          type: array
+          items:
+            type: object
+            required: [scheme, ref]
+            properties:
+              scheme: {type: string, description: "sota, pota, wwff, iota, illw, zlota; open"}
+              ref: {type: string}
+              name: {type: string}
+              latitude: {type: number}
+              longitude: {type: number}
+              grid: {type: string}
+        location:
+          type: object
+          required: [latitude, longitude, precision]
+          properties:
+            latitude: {type: number}
+            longitude: {type: number}
+            precision: {type: string, enum: [exact, grid6, city, dxcc]}
+            dxcc: {type: integer}
+            text: {type: string}
+        frequencies:
+          type: object
+          required: [raw]
+          properties:
+            raw: {type: string}
+            bands: {type: array, items: {$ref: '#/components/schemas/Band'}}
+            modes: {type: array, items: {$ref: '#/components/schemas/Mode'}}
+            hz: {type: array, items: {type: integer}}
+        poster: {type: string}
+        comment: {type: string}
+        url: {type: string, format: uri}
+        firstSeenAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+        cancelled: {type: boolean, description: "Derived; the event disappeared from its source before it started"}
+        distanceKm: {type: number, description: "Present only for `near` queries"}
+        extra: {type: object, additionalProperties: true}
+    SatellitePass:
+      type: object
+      required: [satellite, observer, aos, tca, los, maxElevationDeg, aosAzimuthDeg, tcaAzimuthDeg, losAzimuthDeg, durationSec, transmitters]
+      properties:
+        satellite:
+          type: object
+          required: [noradId, name, tleEpoch]
+          properties:
+            noradId: {type: integer}
+            name: {type: string}
+            tleEpoch: {type: string, format: date-time}
+        observer:
+          type: object
+          required: [latitude, longitude]
+          properties:
+            latitude: {type: number}
+            longitude: {type: number}
+            altitudeM: {type: number}
+            grid: {type: string}
+        aos: {type: string, format: date-time}
+        tca: {type: string, format: date-time}
+        los: {type: string, format: date-time}
+        maxElevationDeg: {type: number}
+        aosAzimuthDeg: {type: number}
+        tcaAzimuthDeg: {type: number}
+        losAzimuthDeg: {type: number}
+        durationSec: {type: integer}
+        transmitters:
+          type: array
+          items:
+            type: object
+            required: [kind, status]
+            properties:
+              uuid: {type: string}
+              kind: {$ref: '#/components/schemas/TransmitterKind'}
+              mode: {type: string}
+              uplinkHz: {type: integer}
+              downlinkHz: {type: integer}
+              inverting: {type: boolean}
+              status: {type: string, enum: [active, inactive]}
+        sunlit: {type: boolean}
+        observerDark: {type: boolean}
+        recentActivity:
+          type: object
+          properties:
+            lastHeardAt: {type: string, format: date-time}
+            heardReports24h: {type: integer}
+
+    # ---------------------------------------------------------- public
