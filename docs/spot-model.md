@@ -1,6 +1,6 @@
 # HamAlert Spot model: proposal from the source research
 
-Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6), 2026-10-15 with the API (section 7). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
+Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6), 2026-10-15 with the API (section 7), 2026-10-18 after the maintainer's review (section 8). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
 cluster, pskreporter, dstar, other-dv), real samples pulled the same day, the current code in
 `hamalert-server`, and the upstream D-STAR implementation. Everything below is a proposal for
 the new API contract, not a description of the current database.
@@ -77,20 +77,18 @@ interface Spot {
   baseCallsign: string;          // "HB9DQM"; derived
   spotter?: Spotter;             // absent when nobody reported it: reflector self-reports (84% of dstarusers), empty PSK Reporter receivers
 
-  time: string;                  // RFC 3339 UTC; the feed's spot time, zero-padded when minute-only (see precision)
+  time: string;                  // RFC 3339 UTC; the feed's spot time, seconds 00 when the feed gives HHMM only
   receivedAt: string;            // when HamAlert ingested it; authoritative for ordering
 
   frequency?: number;            // Hz, integer. Absent for digital voice
   band?: string;                 // "20m", "70cm"; derived from frequency, or from a directory or module letter (see provenance.band); absent for out-of-band junk
 
   mode?: string;                 // normalized family: cw, ssb, fm, am, ft8, ft4, psk, jt, msk, rtty, dstar, ...; trigger condition
-  modeDetail?: string;           // as reported, lowercased: "psk63", "olivia 8/250", "jtty"; also a trigger condition
+  modeDetail?: string;           // as reported, lowercased: "psk63", "olivia 8/250", "jtty"; display only, not a trigger condition
 
   // How a value was obtained when it was NOT reported by the feed. Absent key = reported.
   // Keys are field paths ("mode", "band", "parks.0.ref"); values are an extensible enum.
   provenance: Partial<Record<string, Provenance>>;
-  // Trustworthy resolution where it is coarser than the type suggests. Absent = full.
-  precision: Partial<Record<'time' | 'frequency', 'minute' | 'khz'>>;
 
   comment?: string;              // free text from the feed, trimmed; may contain personal data (D-STAR TX message)
   rawText?: string;              // the original line or record when the feed has one
@@ -107,21 +105,9 @@ interface Spot {
   iota?: IotaRef;
   signal?: SignalReport;         // automated reception measurements
   dstar?: DstarDetail;           // D-STAR presence; other digital voice modes get their own blocks later
-  satellite?: SatelliteDetail;   // AMSAT status reports; cluster spots on known downlinks
-  cluster?: ClusterDetail;
 }
 
-interface SatelliteDetail {
-  noradId?: number;              // identity; null when the name could not be mapped
-  name: string;                  // "AO-91"
-  amsatName?: string;            // "AO-91_[FM]"; the status API key, per transponder
-  transmitterKind?: 'fm_voice' | 'linear' | 'cw_beacon' | 'telemetry' | 'aprs' | 'sstv' | 'datv' | 'digipeater' | 'other';
-  uplinkHz?: number; downlinkHz?: number; inverting?: boolean;
-  report?: 'heard' | 'telemetryOnly' | 'notHeard' | 'crewActive';   // AMSAT vocabulary
-  reportPeriod?: number;         // AMSAT quarter-hour bucket 0..3
-}
-
-/** Extensible: clients must tolerate unknown values and treat them as "not reported". */
+/** Extensible: clients must tolerate unknown values and treat them as "not reported". Informational: triggers never read it. */
 type Provenance =
   | 'bandplan'          // mode inferred from frequency                        (guessed)
   | 'comment'           // mode parsed from free text                          (derived)
@@ -136,10 +122,8 @@ type Provenance =
 
 interface Spotter {
   callsign: string;              // the real reporter: the skimmer behind RBNHole, the SMS sender; for skimmers an id that need not be a licensed callsign ("SNAKESHARMER", 2.4% of PSK Reporter)
-  kind: 'human' | 'skimmer' | 'bot' | 'gateway';
   relay?: string;                // "RBNHOLE", "SMS", "APRS2SOTA" when a bot relayed a real spotter
   instance?: string;             // skimmer instance suffix: "6" from "W1NT-6"
-  isSelf: boolean;               // spotter base call == spotted base call
   entity?: Entity;
   state?: string;
   locator?: string;              // PSK Reporter receiver locator, RBN node grid, cluster trailing grid
@@ -188,12 +172,6 @@ interface DstarDetail {
 }
 // DMR, YSF and other digital voice networks get their own detail types when they are added
 // (see docs/research/other-dv.md for the fields they would carry). Nothing in the base changes.
-
-interface ClusterDetail {
-  node?: string;                 // host the line came from
-  commentTruncated?: boolean;    // comment length hit the 30-char limit
-  format?: 'classic' | 'cc11';
-}
 ```
 
 ### Example: a cluster spot with three inferred values
@@ -202,17 +180,16 @@ interface ClusterDetail {
 {
   "id": "01JA3K7Q9X", "activity": "on-air", "source": "cluster",
   "callsign": "DL1ABC", "baseCallsign": "DL1ABC",
-  "spotter": { "callsign": "G4XYZ", "kind": "human", "isSelf": false },
+  "spotter": { "callsign": "G4XYZ" },
   "time": "2026-10-14T00:18:00Z", "receivedAt": "2026-10-14T00:18:07.412Z",
   "frequency": 14074000, "band": "20m",
   "mode": "ft8", "comment": "CQ POTA DE-0001",
   "parks": [ { "program": "pota", "ref": "DE-0001", "prefix": "DE", "name": "Nationalpark Bayerischer Wald" } ],
-  "provenance": { "mode": "bandplan", "time": "receive-clock", "parks.0.ref": "comment-regex" },
-  "precision": { "time": "minute" }
+  "provenance": { "mode": "bandplan", "time": "receive-clock", "parks.0.ref": "comment-regex" }
 }
 ```
-The UI renders `FT8 (guessed)`. The rule `mode in [ft8] and not guessed(mode)` does not match
-this spot; `parks.ref in [DE-0001]` does.
+The UI renders `FT8 (guessed)`. Triggers ignore provenance: `mode in [ft8]` matches this spot,
+as it does today.
 
 ### What is deliberately not in `Spot`
 
@@ -221,7 +198,7 @@ this spot; `parks.ref in [DE-0001]` does.
   API can offer a server-rendered `display: {title, body}` alongside a spot, but it is not data.
 - **Per-user match data.** A `Spot` is the immutable event a producer creates. The matcher
   evaluates it against every trigger and, per user with a hit, creates a `MatchedSpot`:
-  `{spot, userId, matchedAt, triggerIds, triggerComments, actions}`. That is what goes to
+  `{id, spot, triggers[{id, comment}], actions}`. That is what goes to
   notifications, the app list, the stream and the Telnet emulation. Stored as a copy per
   user with the 24 h expiry, as the `spots` collection does today, because reads are always
   per user.
@@ -258,26 +235,27 @@ epoch milliseconds only inside Redis stream ids.
    package and in the rule language, never stored. Prior art: Spothole's sibling source enums,
    FHIR's parallel metadata objects, and readsb's sparse list of derived fields; stored
    booleans end up as a second source of truth (Spothole's hand-maintained
-   `dx_location_good`). Precision is a separate axis (`precision.time: minute`), because a
-   padded RFC 3339 string cannot carry it and JSON parsing drops trailing zeros.
-   Triggers evaluate values regardless of provenance by default, so `mode in [cw]` still
-   matches a band-plan guess; `not guessed(mode)` opts out, and a per-trigger "ignore guessed
-   values" option compiles to that on every field the trigger references.
+   `dx_location_good`).
+   Triggers evaluate values regardless of provenance, so `mode in [cw]` matches a band-plan
+   guess exactly as today. `provenance` is for display ("FT8 (guessed)"). A per-trigger
+   "ignore guessed values" option was proposed and dropped in review (section 8); it can be
+   added later without a schema change.
 5. **Spotter is an object.** The feeds disagree about what a spotter is: a person, a skimmer,
    a relay bot with the real reporter hidden in the comment, or a D-STAR gateway that is
-   usually the operator's own hotspot. Triggers on spotter, spotter DXCC and the new blocked
-   spotters list all behave differently depending on `kind`. Exposing it lets the trigger
-   editor say so.
+   usually the operator's own hotspot. `relay` keeps the bot that carried the spot (RBNHole,
+   SMS) so the real reporter can be matched; `instance` keeps a skimmer's node suffix. Whether
+   the spotter is a human or a skimmer follows from `source` and `relay`, so it is not stored.
 6. **Detail blocks by data kind.** `provenance["parks.0.ref"] = comment-regex` tells the app a
    park reference was extracted from text rather than structured. A spot can carry a summit
    and a park at once (observed in SOTAwatch comments).
-7. **Mode as two matchable fields.** `mode` (normalized family, open string, not an enum) and
-   `modeDetail` (what the feed said) are both trigger conditions; how the mode was obtained is
-   `provenance.mode`. The current `psk*`, `jt*`, `msk*` prefix collapsing must become an
+7. **Mode as family plus detail.** `mode` (normalized family, open string, not an enum) is the
+   trigger condition; `modeDetail` (what the feed said) is kept for display only, since it
+   differed from `mode` on about 100 of 116,536 collected spots (usb/lsb, jtty, psk31). How
+   the mode was obtained is `provenance.mode`. The current `psk*`, `jt*`, `msk*` prefix collapsing must become an
    explicit list: `JTTY` is a RTTY-like mode that `startsWith('jt')` wrongly folds into `jt`.
-8. **Time carries its precision separately.** Telnet feeds give HHMM only. The instant is
-   resolved against `receivedAt` with midnight rollback, `provenance.time = receive-clock`, and
-   `precision.time = minute`. PSK Reporter decode-time reports get `provenance.time = decode`.
+8. **Time is one instant.** Telnet feeds give HHMM only. The instant is resolved against
+   `receivedAt` with midnight rollback and `provenance.time = receive-clock`; seconds are 00.
+   PSK Reporter decode-time reports get `provenance.time = decode`.
    `receivedAt` is authoritative for ordering and for the 24-hour spot list.
 9. **`source` stays the feed, and digital voice keeps `mode` as the family.** A trigger for
    "D-STAR" matches `mode = dstar` across QuadNet, ircDDB and dstarusers, as upstream does.
@@ -285,91 +263,13 @@ epoch milliseconds only inside Redis stream ids.
 
 ---
 
-## 3a. Planned events and satellite passes
+## 3a. Planned events and satellite passes (deferred)
 
-Research in `docs/research/planned-events.md` and `docs/research/satellite.md`. The idea: a second
-top-level type for things you can watch for in advance or discover near you. Two shapes fall
-out, because a pass is computed by us while an activation is published by someone else.
-
-```ts
-interface PlannedEvent {
-  id: string;                    // `${source}:${sourceId}`; a content hash where the source has no id
-  source: 'sota' | 'wwff' | 'pota' | 'pnp' | 'ng3k' | 'arrl-se' | 'ariss' | 'ariss-sstv' | 'illw' | 'contestcal';
-  kind: 'activation' | 'dxpedition' | 'contest' | 'special-event' | 'ariss-contact' | 'sstv';
-  callsigns: string[];           // [] for contests
-  title: string;
-  start: string; end?: string;   // RFC 3339 UTC
-  timePrecision: 'second' | 'minute' | 'day';
-  recurrence?: 'daily-window' | 'continuous' | 'unknown';   // POTA 7-month ranges, ARRL "daily" windows
-  references: Array<{ scheme: 'sota' | 'pota' | 'wwff' | 'iota' | 'illw' | 'zlota' | string;
-                      ref: string; name?: string; latitude?: number; longitude?: number; grid?: string }>;
-  location?: { latitude: number; longitude: number;
-               precision: 'exact' | 'grid6' | 'city' | 'dxcc'; dxcc?: number; text?: string };
-  frequencies: { raw: string; bands?: string[]; modes?: string[]; hz?: number[] };   // raw is always kept
-  poster?: string; comment?: string; url?: string;
-  firstSeenAt: string; updatedAt: string;
-  cancelled: boolean;            // derived: seen before, gone now, start still in the future
-  extra?: Record<string, unknown>;   // school, astronaut, exchange, qsl ...
-}
-
-interface SatellitePass {
-  satellite: { noradId: number; name: string; tleEpoch: string };
-  observer: { latitude: number; longitude: number; altitudeM?: number; grid?: string };
-  aos: string; tca: string; los: string;        // RFC 3339 UTC
-  maxElevationDeg: number;
-  aosAzimuthDeg: number; tcaAzimuthDeg: number; losAzimuthDeg: number;
-  durationSec: number;
-  transmitters: Array<{ uuid?: string; kind: SatelliteDetail['transmitterKind']; mode?: string;
-                        uplinkHz?: number; downlinkHz?: number; inverting?: boolean; status: 'active' | 'inactive' }>;
-  sunlit?: boolean; observerDark?: boolean;
-  recentActivity?: { lastHeardAt?: string; heardReports24h?: number };   // join with AMSAT status
-}
-```
-
-What the sources can fill (see the fill matrix in `planned-events.md` section 10):
-
-- **Activations**: SOTA alerts, WWFF agendas and POTA's schedule endpoint
-  (`https://api.pota.app/activation`, 157 records, no auth) all carry a callsign, a UTC start,
-  a reference that joins to coordinates, and free-text frequencies. SOTA has no end time. POTA
-  has no poster, no mode, edits change the id, and some entries span seven months. Frequency
-  text is junk-prone everywhere (`all`, `None`, `7-cw, 14-ssb`), so `raw` is kept and
-  `bands`/`modes` are best-effort.
-- **DXpeditions**: NG3K ADXO RSS (`https://www.ng3k.com/adxo.xml`), day precision, no ids,
-  callsign sometimes just a prefix, location only as a DXCC entity or a grid in free text.
-- **Contests**: WA7BNM's terms forbid bots and require written agreement for machine use; do
-  not ingest without permission. SM3CER is dead.
-- **Special events and ARISS**: HTML only, free text, need geocoding; ARISS contacts give an
-  AOS time to the second and a ground-station callsign.
-- **Cancellation**: no source has a flag. Derive it by diffing polls, keep the record for a
-  grace period so users get a "cancelled" notice, and add a text heuristic on the comment.
-- **ParksnPeaks** mirrors SOTA/WWFF/POTA with timestamps in local time without a marker
-  (verified AEDT on a SOTA row); its only unique value is the NZ and regional schemes.
-- **"Near you"** needs a resolved point on the event at ingest: exact for programme
-  references, grid when present in text, city via a gazetteer, DXCC centroid as a fallback,
-  with `precision` saying which.
-
-Satellite specifics:
-
-- **Orbital data**: Celestrak GP amateur group (96 objects, OMM JSON) with SatNOGS DB
-  `/api/tle/` as fallback; Celestrak blocks bursts (503 after a handful of requests), so cache
-  and refresh every 6 h. NORAD ids exceed 99999 already, so prefer OMM JSON over TLE text.
-- **Catalogue**: SatNOGS DB (2832 satellites, 5114 transmitters, Hz integers, CC BY-SA 4.0,
-  unpaginated, no ETag). 61 raw mode values; map to the `transmitterKind` enum above. Names
-  differ between Celestrak, SatNOGS and AMSAT, so a curated table of the 30 to 40 useful
-  satellites is needed.
-- **Activity**: AMSAT's status API (`https://www.amsat.org/status/api/v1/reports.php`) is the
-  only live keyless "someone heard it" feed. It has no DX callsign, no frequency, no NORAD id,
-  hour-bucketed times and per-transponder names (`AO-91_[FM]`). It fits the `satellite`
-  detail block with `callsign` absent, which is the one case where the base needs `callsign`
-  to be optional, or the satellite name goes in `callsign`. Decide which.
-- **Passes**: computed server-side per user location, since alerts fire with no client open;
-  SGP4 for 40 satellites over 3 days is milliseconds per user. The catalogue and OMM are also
-  published so clients can compute local "next passes" for map exploration. Geostationary
-  (QO-100) gets a visibility flag instead of passes; re-entered satellites are dropped from
-  SatNOGS status.
-- Pass triggers to support: satellite list, minimum max-elevation, notify N minutes before
-  AOS, time-of-day window, require an active transmitter of a kind, require `Heard` in the
-  last 24 h.
+Researched in `docs/research/planned-events.md` and `docs/research/satellite.md`, and drafted here as a
+second top-level type (planned activations, DXpeditions, contests, ARISS contacts) plus a
+computed satellite pass type with its own endpoints. Removed from the contract after the
+maintainer's review (section 8): HamAlert does not handle planned events and there are no
+plans to. The research stays for whoever picks it up; nothing in `Spot` depends on it.
 
 ---
 
@@ -384,10 +284,10 @@ today, which is right, and it means producers should not write the database at a
 
 | Role | Owns (writes) | Reads | Talks to |
 |---|---|---|---|
-| **Producers** (one process per source) | nothing persistent | reference data | emit validated `Spot` / `PlannedEvent` objects onto an internal Redis Stream |
+| **Producers** (one process per source) | nothing persistent | reference data | emit validated `Spot` objects onto an internal Redis Stream |
 | **Matcher** | matched spots in MongoDB, per-user Redis streams, notifications | triggers, users, mutes, reference data | consumes the firehose; reloads triggers on a change event instead of a 60 s poll |
 | **API service** | users, triggers, mutes, devices, limits, blocked spotters | matched spots (history), per-user streams (SSE/WebSocket) | publishes "triggers changed"; the simulator is an endpoint that puts a user-tagged spot on the firehose |
-| **Reference loaders** (one process per dataset) | summits, parks, IOTA, DXCC, DV directories, satellites, TLEs, callsign state, QSL lists | upstream lists | scheduled; the only writers of reference data |
+| **Reference loaders** (one process per dataset) | summits, parks, IOTA, DXCC, DV directories, callsign state, QSL lists | upstream lists | scheduled; the only writers of reference data |
 
 **Enrichment** (band, DXCC, state, QSL flags, reference validation from comments, mode
 guessing) is one stage between the firehose and the matcher, not a library each producer
@@ -397,8 +297,8 @@ enricher emits the final spot the matcher and clients see.
 
 **Reference data** is loaded by separate processes, one per dataset, that fetch the upstream
 list, normalize it to the shared schema and write it to the database: summits, the POTA and
-WWFF park directories, IOTA groups, DXCC, node and reflector directories, the satellite
-catalogue and orbital elements, callsign state and QSL lists. They run on their own schedule
+WWFF park directories, IOTA groups, DXCC, node and reflector directories, callsign state
+and QSL lists. They run on their own schedule
 and are the only writers of that data. Every reader (source producers, the enricher, the
 API's editor pickers) reads it from the database. (Decided 2026-10-14.) No private in-memory copy that can drift from the published one: the cluster
 producer validating a summit it finds in a comment and the editor offering that summit must
@@ -418,7 +318,7 @@ are stored in MongoDB by their producer-side ingester, since clients query them 
 | `fullCallsign` / `callsign` | `callsign` / `baseCallsign` | the old `callsign` meant the stripped call |
 | `spotter`, `spotterPrefix`, `spotterDxcc`, `spotterState` | `spotter.callsign`, `.entity`, `.state` | prefix is derivable |
 | `frequency` (MHz, mixed string/number) | `frequency` (Hz int) | |
-| `time` (HH:MM) + `receivedDate` | `time` (instant) + `precision.time` + `receivedAt` | |
+| `time` (HH:MM) + `receivedDate` | `time` (instant) + `receivedAt` | |
 | `mode`, `modeDetail`, `modeIsGuessed` | `mode`, `modeDetail`, `provenance.mode` | |
 | `dxcc {dxcc,country,cq[],continent[]}` | `entity {dxcc,name,cq,continent}` | zones were arrays with one element |
 | `callsignDxcc` | `homeEntity` | |
@@ -437,7 +337,7 @@ Trigger condition fields map one to one: `band`, `mode`, `source`, `callsign`, `
 `prefix`, `spotter`, `dxcc`, `callsignDxcc`, `spotterDxcc`, `cq`, `continent`, `state`, `qsl`,
 `summitRef`, `summitAssociation`, `summitRegion`, `summitPoints`, `summitActivations`, `wwffRef`,
 `wwffDivision`, `iotaGroupRef`, `speed`, `snr`, `dvEvent`, `dvNode`, `dvReflector`, `dvGroup`.
-New condition candidates the model makes possible: `activity`, `modeDetail`, `spotterKind`, `parkProgram`.
+New condition candidates the model makes possible: `activity`, `parkProgram`, `parkRef` across both park programmes.
 
 ---
 
@@ -661,8 +561,7 @@ the shape and the reasoning, not every field. Backwards compatibility with any c
 /mutes                       list, create, delete one / all
 /spots                       matched history (cursor), delete, badge, /stream (SSE)
 /simulate                    synchronous test against this account's triggers
-/reference/*                 vocabularies, dxcc, sota, parks, iota, satellites (+orbits)
-/events, /satellites/passes  planned events, pass prediction
+/reference/*                 vocabularies, dxcc, sota, parks, iota
 /public/*, /health           stats, last spot, MySpot PNG, per-source feed health
 ```
 
@@ -692,10 +591,15 @@ enrichment, so `dxcc` and `band` apply to a cluster spot that reported neither.
 | `iotaGroupRef` | `iota` | Shorter, matches the spot field. |
 | `bandslot` | `bandSlot` | Same thing; the slot table moves to `/reference/vocabularies`. |
 | `timeFrom`/`timeTo` | `timeOfDay: {from, to}` | Range shape like the others; `from > to` wraps midnight. |
-| (none) | `modeDetail`, `frequency`, `spotterKind`, `selfSpot`, `satellite` | New fields in the spot that are worth matching on. |
+| `band` | `band` | Unchanged; accepts single bands and the groups `vlf lf mf hf vhf uhf shf ehf`, which the matcher expands. |
+| `summitRegion` | `summitRegion` | Unchanged; the two-letter region code, combined with `summitAssociation`. |
+| (none) | `parkProgram`, `parkLocation`, `activity` | New fields in the spot that are worth matching on. |
 
-`options` carries what is not a condition: `ignoreGuessed` (skip the match when any conditioned
-field has guessed provenance), `clublogUnworked` (nightly sync of `conditions.dxcc`),
+List conditions take up to 5000 values; `comment` up to 1000 characters. Matching is on
+discrete values only, so there is no frequency range condition; `bandSlot` covers "40 m CW
+segment" and the like.
+
+`options` carries what is not a condition: `clublogUnworked` (nightly sync of `conditions.dxcc`),
 `sotaCompleteAuto` (nightly sync of `conditions.summitRef`). `actions` is a set of
 `app | telnet | url | threema`. Read-only: `matchCount`, `lastMatchedAt`, `autoDisabled {at, reason}`.
 Replacing a trigger resets the count and clears `autoDisabled`; today's silent disable becomes
@@ -705,10 +609,9 @@ visible.
 extended, not duplicated.
 
 **Matched spots.** `GET /spots` returns `MatchedSpot[]` newest first, cursor paginated, 24 h
-window, filterable by action. `MatchedSpot` is `{id, spot, matchedAt, triggers[{id, comment}],
-actions[], suppressed?[]}`. `suppressed` names why a recorded spot was not delivered
-(`limit`, `mute`, `blockedSpotter`), so the app can show "matched but muted" instead of nothing.
-`PUT /spots/badge` replaces today's badge reset. `GET /spots/stream` is server-sent events, one
+window, filterable by action. `MatchedSpot` is `{id, spot, triggers[{id, comment}], actions[]}`.
+Spots that were matched but suppressed by a limit, mute or blocked spotter are not stored, as
+today. `PUT /spots/badge` replaces today's badge reset. `GET /spots/stream` is server-sent events, one
 event per matched spot with `id` = matched spot id, resumable for 24 h with `Last-Event-ID`.
 This replaces polling and is what the web client and the app use when in the foreground.
 
@@ -726,14 +629,8 @@ Limits and mutes do not apply to simulated spots.
 
 **Reference data.** Served by the API, written only by the reference loaders (§3b). Vocabularies
 (bands, band slots, modes, sources, actions, states, the registration question), DXCC entities,
-SOTA associations and summits, park programmes and parks, IOTA groups, the satellite catalogue
-with transmitters, and current orbital elements (OMM, Celestrak JSON shape) so clients can
-predict passes offline.
-
-**Planned events.** Read side only for now: `GET /events` with kind, callsign, time window and
-`near=lat,lon&radiusKm=` filters, and `GET /satellites/passes` for a location. The schemas are
-the ones in §3a. Triggers on planned events come later; when they do, the matcher consumes the
-same `PlannedEvent` record.
+SOTA associations and summits, park programmes and parks, and IOTA groups. Vocabularies also
+publish the band groups and band slots the trigger editor offers.
 
 **Public.** Daily stats per source and per action, last spot of a callsign, the MySpot PNG
 (HMAC-protected as today), and `/health` with per-source `lastSpotAt` and `ok | stale | down`.
@@ -749,8 +646,9 @@ is username plus the Telnet password from destinations.
 
 - No legacy routes, no Basic auth, no old spot or trigger ids. Clients are rewritten with the
   server.
-- No per-field `guessed` booleans in the API; `provenance` carries that (§2) and
-  `options.ignoreGuessed` is the only trigger-level switch.
+- No per-field `guessed` booleans in the API and no trigger switch on them; `provenance` is
+  display information (§2).
+- No planned events or satellite passes (§3a).
 - No WebSocket. SSE covers the push case with less machinery; the Telnet feed covers the rest.
 - No API rate limiting in the spec beyond `429` on the auth endpoints; that belongs to the
   gateway.
@@ -763,3 +661,30 @@ is username plus the Telnet password from destinations.
 - The anti-spam registration question is kept; swap for a captcha if abuse returns.
 - Whether `Spot.rawText` is returned to clients or kept server-side (size, and it is the one field
   that could leak a source's formatting quirks into the UI).
+
+---
+
+## 8. Maintainer review, 2026-10-17
+
+Manuel (manuelkasper) reviewed the model and the API on the PR and asked for a KISS pass. All of
+it was applied on 2026-10-18; the reasoning is recorded so the next person does not re-add them.
+
+| Removed | Why it was there | Why it goes |
+|---|---|---|
+| `Spot.precision` | Telnet HHMM, kHz feeds | Never populated in 116,536 collected spots; no consumer. Seconds are 00, Hz digits are 000. |
+| `Spot.cluster`, `ClusterDetail` | mirror node, 30-char truncation flag | Truncation hit 53 of 1,430 cluster spots; node is which mirror. Not worth a block. |
+| `Spot.satellite`, `SatelliteDetail` | AMSAT status, QO-100 traffic | No producer, no plans. |
+| `Spotter.kind` | human / skimmer / bot / gateway | A pure function of `source` and `relay`. |
+| `Spotter.isSelf` | self-spot flag | Computable from the two base callsigns. |
+| `MatchedSpot.matchedAt`, `.suppressed` | match time; why not delivered | `spot.receivedAt` is within seconds; suppressed spots are not stored. |
+| Trigger `frequency` range | 40 m CW segment | The matcher looks up discrete values; `bandSlot` covers it. |
+| Trigger `spotterKind`, `selfSpot`, `satellite`, `modeDetail` | new conditions | Follow from the field removals; `modeDetail` differs from `mode` on under 0.1% of spots. |
+| Trigger `options.ignoreGuessed` | skip band-plan-guessed modes | Today's HamAlert matches guessed modes and nobody asks for a filter. Addable later. |
+| `/events`, `/satellites/passes`, `/reference/satellites*`, `PlannedEvent`, `SatellitePass` | planned events, pass prediction | Out of HamAlert's scope. Research kept in `docs/research/`. |
+
+| Changed | From | To |
+|---|---|---|
+| Trigger `band` | single bands only | also the groups `vlf lf mf hf vhf uhf shf ehf`, expanded by the matcher |
+| Trigger `summitRegion` | `ASSOC/RG` | two-letter region code, as today |
+| Trigger `comment` | 100 chars | 1000 |
+| List conditions | 1000 callsigns, 5000 refs | 5000 everywhere |

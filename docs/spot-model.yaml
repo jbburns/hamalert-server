@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: HamAlert spot model
-  version: 0.1.0
+  version: 0.2.0
   summary: Schemas shared by producers, enricher, matcher, streams, webhook and the HTTP API.
   description: |
     Schema-only document (no paths). The HTTP API in openapi.yaml references these by
@@ -59,13 +59,11 @@ components:
         itu: {type: integer}
     Spotter:
       type: object
-      required: [callsign, kind, isSelf]
+      required: [callsign]
       properties:
         callsign: {type: string}
-        kind: {type: string, enum: [human, skimmer, bot, gateway]}
         relay: {type: string, description: 'Service that carried a human spot (RBNHole, SMS, APRS2SOTA, ...)'}
         instance: {type: string, pattern: '^[0-9]{1,2}$', description: 'Skimmer instance suffix, e.g. W1NT-6 → "6"'}
-        isSelf: {type: boolean}
         entity: {$ref: '#/components/schemas/Entity'}
         state: {type: string}
         locator: {type: string}
@@ -123,28 +121,6 @@ components:
         suffix: {type: string, maxLength: 4, description: 'MY suffix (the 4-character field), e.g. "ID51"'}
         ber: {type: number, description: "Bit error rate percent"}
         silencePct: {type: number}
-    TransmitterKind:
-      type: string
-      enum: [fm_voice, linear, cw_beacon, telemetry, aprs, sstv, datv, digipeater, other]
-    SatelliteDetail:
-      type: object
-      required: [name]
-      properties:
-        noradId: {type: integer}
-        name: {type: string}
-        amsatName: {type: string, description: 'AMSAT status key, per transponder, e.g. AO-91_[FM]'}
-        transmitterKind: {$ref: '#/components/schemas/TransmitterKind'}
-        uplinkHz: {type: integer}
-        downlinkHz: {type: integer}
-        inverting: {type: boolean}
-        report: {type: string, enum: [heard, telemetryOnly, notHeard, crewActive]}
-        reportPeriod: {type: integer, minimum: 0, maximum: 3}
-    ClusterDetail:
-      type: object
-      properties:
-        node: {type: string}
-        commentTruncated: {type: boolean, description: "Comment hit the 30-character cluster limit"}
-        format: {type: string, enum: [classic, cc11]}
     Provenance:
       type: object
       description: |
@@ -153,16 +129,10 @@ components:
         Derived but reliable: `directory`, `dashboard`, `decode`, `receive-clock`, `relay-unwrapped`, `reference`.
         Keys use dotted paths, e.g. `mode`, `parks.0.ref`, `dstar.reflector`.
       additionalProperties: {type: string, pattern: '^[a-z-]+$'}
-    Precision:
-      type: object
-      additionalProperties: false
-      properties:
-        time: {type: string, enum: [minute], description: "Source gave HH:MM only; seconds are 00"}
-        frequency: {type: string, enum: [khz], description: "Source gave kHz; Hz digits are 000"}
     # ---- spot
     Spot:
       type: object
-      required: [id, activity, source, callsign, baseCallsign, time, receivedAt, provenance, precision]
+      required: [id, activity, source, callsign, baseCallsign, time, receivedAt, provenance]
       properties:
         id: {type: string, description: "Server-assigned, globally unique, time-ordered"}
         activity: {$ref: '#/components/schemas/Activity'}
@@ -190,18 +160,14 @@ components:
         iota: {$ref: '#/components/schemas/IotaRef'}
         signal: {$ref: '#/components/schemas/SignalReport'}
         dstar: {$ref: '#/components/schemas/DstarDetail'}
-        satellite: {$ref: '#/components/schemas/SatelliteDetail'}
-        cluster: {$ref: '#/components/schemas/ClusterDetail'}
         provenance: {$ref: '#/components/schemas/Provenance'}
-        precision: {$ref: '#/components/schemas/Precision'}
     MatchedSpot:
       type: object
       description: One spot that matched one or more of the account's triggers. This is also the webhook body.
-      required: [id, spot, matchedAt, triggers, actions]
+      required: [id, spot, triggers, actions]
       properties:
         id: {type: string, description: "Matched spot id; the SSE event id and the webhook delivery id"}
         spot: {$ref: '#/components/schemas/Spot'}
-        matchedAt: {type: string, format: date-time}
         triggers:
           type: array
           minItems: 1
@@ -212,112 +178,3 @@ components:
               id: {type: string}
               comment: {type: string}
         actions: {type: array, items: {$ref: '#/components/schemas/Action'}, description: "Union of the matched triggers' actions"}
-        suppressed:
-          type: array
-          items: {type: string, enum: [limit, mute, blockedSpotter]}
-          description: Present when the spot was recorded but not delivered
-
-    # ---------------------------------------------------------- simulate
-    # ---- planned events
-    EventKind:
-      type: string
-      enum: [activation, dxpedition, contest, special-event, ariss-contact, sstv]
-    PlannedEvent:
-      type: object
-      required: [id, source, kind, callsigns, title, start, timePrecision, references, frequencies, firstSeenAt, updatedAt, cancelled]
-      properties:
-        id: {type: string}
-        source: {type: string, description: "sota, wwff, pota, pnp, ng3k, arrl-se, ariss, ariss-sstv, illw, contestcal; open"}
-        kind: {$ref: '#/components/schemas/EventKind'}
-        callsigns: {type: array, items: {$ref: '#/components/schemas/Callsign'}, description: "Empty for contests"}
-        title: {type: string}
-        start: {type: string, format: date-time}
-        end: {type: string, format: date-time}
-        timePrecision: {type: string, enum: [second, minute, day]}
-        recurrence: {type: string, enum: [daily-window, continuous, unknown]}
-        references:
-          type: array
-          items:
-            type: object
-            required: [scheme, ref]
-            properties:
-              scheme: {type: string, description: "sota, pota, wwff, iota, illw, zlota; open"}
-              ref: {type: string}
-              name: {type: string}
-              latitude: {type: number}
-              longitude: {type: number}
-              grid: {type: string}
-        location:
-          type: object
-          required: [latitude, longitude, precision]
-          properties:
-            latitude: {type: number}
-            longitude: {type: number}
-            precision: {type: string, enum: [exact, grid6, city, dxcc]}
-            dxcc: {type: integer}
-            text: {type: string}
-        frequencies:
-          type: object
-          required: [raw]
-          properties:
-            raw: {type: string}
-            bands: {type: array, items: {$ref: '#/components/schemas/Band'}}
-            modes: {type: array, items: {$ref: '#/components/schemas/Mode'}}
-            hz: {type: array, items: {type: integer}}
-        poster: {type: string}
-        comment: {type: string}
-        url: {type: string, format: uri}
-        firstSeenAt: {type: string, format: date-time}
-        updatedAt: {type: string, format: date-time}
-        cancelled: {type: boolean, description: "Derived; the event disappeared from its source before it started"}
-        distanceKm: {type: number, description: "Present only for `near` queries"}
-        extra: {type: object, additionalProperties: true}
-    SatellitePass:
-      type: object
-      required: [satellite, observer, aos, tca, los, maxElevationDeg, aosAzimuthDeg, tcaAzimuthDeg, losAzimuthDeg, durationSec, transmitters]
-      properties:
-        satellite:
-          type: object
-          required: [noradId, name, tleEpoch]
-          properties:
-            noradId: {type: integer}
-            name: {type: string}
-            tleEpoch: {type: string, format: date-time}
-        observer:
-          type: object
-          required: [latitude, longitude]
-          properties:
-            latitude: {type: number}
-            longitude: {type: number}
-            altitudeM: {type: number}
-            grid: {type: string}
-        aos: {type: string, format: date-time}
-        tca: {type: string, format: date-time}
-        los: {type: string, format: date-time}
-        maxElevationDeg: {type: number}
-        aosAzimuthDeg: {type: number}
-        tcaAzimuthDeg: {type: number}
-        losAzimuthDeg: {type: number}
-        durationSec: {type: integer}
-        transmitters:
-          type: array
-          items:
-            type: object
-            required: [kind, status]
-            properties:
-              uuid: {type: string}
-              kind: {$ref: '#/components/schemas/TransmitterKind'}
-              mode: {type: string}
-              uplinkHz: {type: integer}
-              downlinkHz: {type: integer}
-              inverting: {type: boolean}
-              status: {type: string, enum: [active, inactive]}
-        sunlit: {type: boolean}
-        observerDark: {type: boolean}
-        recentActivity:
-          type: object
-          properties:
-            lastHeardAt: {type: string, format: date-time}
-            heardReports24h: {type: integer}
-
-    # ---------------------------------------------------------- public
