@@ -1,6 +1,6 @@
 # HamAlert Spot model: proposal from the source research
 
-Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6), 2026-10-15 with the API (section 7), 2026-10-18 after the maintainer's review (section 8). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
+Date: 2026-10-13, updated 2026-10-14 after two collector runs (section 6), 2026-10-15 with the API (section 7), 2026-10-18 after the maintainer's review and a second adversarial review (section 8). Based on eight source reports in `docs/research/` (sotawatch, pota, wwff, rbn,
 cluster, pskreporter, dstar, other-dv), real samples pulled the same day, the current code in
 `hamalert-server`, and the upstream D-STAR implementation. Everything below is a proposal for
 the new API contract, not a description of the current database.
@@ -81,17 +81,18 @@ interface Spot {
   receivedAt: string;            // when HamAlert ingested it; authoritative for ordering
 
   frequency?: number;            // Hz, integer. Absent for digital voice
-  band?: string;                 // "20m", "70cm"; derived from frequency, or from a directory or module letter (see provenance.band); absent for out-of-band junk
+  band?: string;                 // "20m", "70cm", "3cm_qo100"; derived from frequency, or from a directory or module letter (see provenance.band); absent for out-of-band junk
+  bandSlot?: string;             // "<dxcc>_<band>", e.g. "279_20m"; present when entity and band are both known. The Club Log unworked-slot unit
 
   mode?: string;                 // normalized family: cw, ssb, fm, am, ft8, ft4, psk, jt, msk, rtty, dstar, ...; trigger condition
   modeDetail?: string;           // as reported, lowercased: "psk63", "olivia 8/250", "jtty"; display only, not a trigger condition
 
   // How a value was obtained when it was NOT reported by the feed. Absent key = reported.
   // Keys are field paths ("mode", "band", "parks.0.ref"); values are an extensible enum.
-  provenance: Partial<Record<string, Provenance>>;
+  provenance?: Partial<Record<string, Provenance>>;   // omitted when empty
 
   comment?: string;              // free text from the feed, trimmed; may contain personal data (D-STAR TX message)
-  rawText?: string;              // the original line or record when the feed has one
+  rawText?: string;              // the source line verbatim; only line-based feeds (cluster, RBN, WWFF telnet, PSK Reporter)
 
   // Enrichment HamAlert adds. Always attempted, may be absent.
   entity?: Entity;               // DXCC of `callsign` (full call)
@@ -117,26 +118,23 @@ type Provenance =
   | 'dashboard'         // reflector from a scraped link table                 (derived)
   | 'decode'            // time is decode time, not transmit start             (guessed)
   | 'receive-clock'     // date part of time taken from receivedAt             (derived)
-  | 'relay-unwrapped'   // spotter taken from inside a relay bot's comment     (derived)
   | (string & {});
 
 interface Spotter {
   callsign: string;              // the real reporter: the skimmer behind RBNHole, the SMS sender; for skimmers an id that need not be a licensed callsign ("SNAKESHARMER", 2.4% of PSK Reporter)
-  relay?: string;                // "RBNHOLE", "SMS", "APRS2SOTA" when a bot relayed a real spotter
   instance?: string;             // skimmer instance suffix: "6" from "W1NT-6"
   entity?: Entity;
   state?: string;
-  locator?: string;              // PSK Reporter receiver locator, RBN node grid, cluster trailing grid
 }
 
-interface Entity { dxcc: number; name: string; continent?: string; cq?: number; itu?: number; }
+interface Entity { dxcc: number; name: string; continent?: string; cq?: number; }
 
 interface SummitRef {
   program: 'sota';               // GMA/HEMA later
   ref: string;                   // "W7W/WH-185"
   association: string; region: string;
   name?: string; altitude?: number; points?: number;
-  activationCount?: number; valid?: boolean;
+  activationCount?: number;
   latitude?: number; longitude?: number;
 }
 
@@ -153,11 +151,7 @@ interface IotaRef { ref: string; name?: string; }
 
 interface SignalReport {
   snr?: number;                  // dB; negative on FT8
-  speed?: number; speedUnit?: 'wpm' | 'bps';
-  spotType?: 'cq' | 'dx' | 'beacon' | 'ncdxf';   // RBN trailing marker
-  senderLocator?: string;        // PSK Reporter
-  software?: string;             // "WSJT-X v2.6.1"
-  spotterCount?: number;         // quorum count when the backend applies one
+  speed?: number;                // WPM for CW, baud for RTTY/PSK
 }
 
 interface DstarDetail {
@@ -168,7 +162,6 @@ interface DstarDetail {
   group?: string; groupName?: string;   // QuadNet Smart Group
   duration?: number;             // seconds; QuadNet always, ircDDB only when the stats record arrived
   suffix?: string;               // 4-char radio suffix
-  ber?: number; silencePct?: number;
 }
 // DMR, YSF and other digital voice networks get their own detail types when they are added
 // (see docs/research/other-dv.md for the fields they would carry). Nothing in the base changes.
@@ -193,12 +186,12 @@ as it does today.
 
 ### What is deliberately not in `Spot`
 
-- **Title and body text for notifications.** Today `title` and `rawText` are built per source
-  and users template them. Rendering belongs to the notification layer and the clients; the
-  API can offer a server-rendered `display: {title, body}` alongside a spot, but it is not data.
+- **Title and body text for notifications.** Push, Threema and Telnet need rendered text, and
+  users template it. The server renders it once per match from the account's app templates
+  and puts it on `MatchedSpot.display: {title, body}`, never on the spot.
 - **Per-user match data.** A `Spot` is the immutable event a producer creates. The matcher
   evaluates it against every trigger and, per user with a hit, creates a `MatchedSpot`:
-  `{id, spot, triggers[{id, comment}], actions}`. That is what goes to
+  `{id, spot, triggers[{id, comment}], actions, display}`. That is what goes to
   notifications, the app list, the stream and the Telnet emulation. Stored as a copy per
   user with the 24 h expiry, as the `spots` collection does today, because reads are always
   per user.
@@ -242,9 +235,10 @@ epoch milliseconds only inside Redis stream ids.
    added later without a schema change.
 5. **Spotter is an object.** The feeds disagree about what a spotter is: a person, a skimmer,
    a relay bot with the real reporter hidden in the comment, or a D-STAR gateway that is
-   usually the operator's own hotspot. `relay` keeps the bot that carried the spot (RBNHole,
-   SMS) so the real reporter can be matched; `instance` keeps a skimmer's node suffix. Whether
-   the spotter is a human or a skimmer follows from `source` and `relay`, so it is not stored.
+   usually the operator's own hotspot. `spotter.callsign` is always the real reporter (the
+   skimmer behind RBNHole, the SMS sender); `instance` keeps a skimmer's node suffix. Whether
+   the spotter is a human or a skimmer follows from `source`, so it is not stored. A `relay`
+   field was tried and dropped: 204 of its 233 values were DXSummit's web-client marker.
 6. **Detail blocks by data kind.** `provenance["parks.0.ref"] = comment-regex` tells the app a
    park reference was extracted from text rather than structured. A spot can carry a summit
    and a park at once (observed in SOTAwatch comments).
@@ -326,11 +320,12 @@ are stored in MongoDB by their producer-side ingester, since clients query them 
 | `summitRef/Association/Region/Name/Height/Points/Activations` | `summit.*` | |
 | `wwffRef/Division/Name/Program` | `parks[].ref/.prefix/.name/.program` | |
 | `iotaGroupRef/Name` | `iota.ref/.name` | |
-| `snr`, `speed` | `signal.snr`, `signal.speed`, `signal.speedUnit` | |
+| `snr`, `speed` | `signal.snr`, `signal.speed` | |
 | `dvEvent active/linked` | `activity on-air/monitoring` | one field for all sources |
 | `dvNode`, `dvReflector`, `dvReflectorSource`, `dvGroup`, `dvGroupName`, `dvSuffix`, `dvDuration` | `dstar.node`, `.reflector`, `provenance["dstar.reflector"]`, `.group`, `.groupName`, `.suffix`, `.duration` | |
 | `bandIsGuessed`, `frequencySource` | `provenance.band`, `provenance.frequency` | |
-| `title`, `rawText` | `rawText` (native only) + rendered `display` | |
+| `bandslot` (`<dxcc>_<band>`) | `bandSlot`, same value | |
+| `title`, `rawText` | `MatchedSpot.display {title, body}`; `rawText` only for line-based feeds | |
 | `user_id`, `actions`, `triggerComment(s)` | `MatchedSpot` wrapper | |
 
 Trigger condition fields map one to one: `band`, `mode`, `source`, `callsign`, `fullCallsign`,
@@ -565,7 +560,8 @@ the shape and the reasoning, not every field. Backwards compatibility with any c
 /public/*, /health           stats, last spot, MySpot PNG, per-source feed health
 ```
 
-**Account and destinations.** The account is the login, email and Club Log link. Destinations are
+**Account and destinations.** The account is the login, email, Club Log link and the master
+`alertsEnabled` switch (vacation mode: everything stays configured, nothing is delivered). Destinations are
 where alerts go, one object with four parts: `app` (title and body templates), `telnet` (enabled,
 password), `url` (enabled, URL, HMAC secret), `threema` (id, verified). Secrets are write-only;
 the response says `secretSet: true`. Setting a new Threema id sends a verification code.
@@ -589,27 +585,29 @@ enrichment, so `dxcc` and `band` apply to a cluster spot that reported neither.
 | `wwffRef`, `wwffDivision` | `parkRef`, `parkPrefix`, plus `parkProgram`, `parkLocation` | POTA and WWFF are one `parks[]` block in the spot, so one set of conditions. |
 | `callsignDxcc` | `homeDxcc` | Matches the spot field name. |
 | `iotaGroupRef` | `iota` | Shorter, matches the spot field. |
-| `bandslot` | `bandSlot` | Same thing; the slot table moves to `/reference/vocabularies`. |
+| `bandslot` | `bandSlot` | Same value, `<dxcc>_<band>`, the Club Log unworked-slot unit. Written nightly by `options.clublogUnworked`. |
 | `timeFrom`/`timeTo` | `timeOfDay: {from, to}` | Range shape like the others; `from > to` wraps midnight. |
 | `band` | `band` | Unchanged; accepts single bands and the groups `vlf lf mf hf vhf uhf shf ehf`, which the matcher expands. |
 | `summitRegion` | `summitRegion` | Unchanged; the two-letter region code, combined with `summitAssociation`. |
 | (none) | `parkProgram`, `parkLocation`, `activity` | New fields in the spot that are worth matching on. |
 
-List conditions take up to 5000 values; `comment` up to 1000 characters. Matching is on
-discrete values only, so there is no frequency range condition; `bandSlot` covers "40 m CW
-segment" and the like.
+List conditions take up to 5000 values; the trigger `comment` up to 1000 characters. Matching
+is on discrete values only, so there is no frequency range condition. An absent `activity`
+means `[on-air]`, so a plain callsign trigger never fires on QRT or D-STAR link events.
 
-`options` carries what is not a condition: `clublogUnworked` (nightly sync of `conditions.dxcc`),
+`options` carries what is not a condition: `clublogUnworked` (nightly rewrite of
+`conditions.bandSlot` from the Club Log chart, for the bands in `conditions.band`),
 `sotaCompleteAuto` (nightly sync of `conditions.summitRef`). `actions` is a set of
 `app | telnet | url | threema`. Read-only: `matchCount`, `lastMatchedAt`, `autoDisabled {at, reason}`.
 Replacing a trigger resets the count and clears `autoDisabled`; today's silent disable becomes
 visible.
 
-**Mutes.** Callsign plus optional band, mode or summit, with a duration. An identical mute is
-extended, not duplicated.
+**Mutes.** Base callsign plus optional band or summit, with a duration, so muting `HB9DQM` from
+an `HB9DQM/P` alert works. An identical mute is extended, not duplicated.
 
 **Matched spots.** `GET /spots` returns `MatchedSpot[]` newest first, cursor paginated, 24 h
-window, filterable by action. `MatchedSpot` is `{id, spot, triggers[{id, comment}], actions[]}`.
+window, filterable by action. `MatchedSpot` is `{id, spot, triggers[{id, comment}], actions[],
+display {title, body}}`; `display` is the rendered notification text every channel shows.
 Spots that were matched but suppressed by a limit, mute or blocked spotter are not stored, as
 today. `PUT /spots/badge` replaces today's badge reset. `GET /spots/stream` is server-sent events, one
 event per matched spot with `id` = matched spot id, resumable for 24 h with `Last-Event-ID`.
@@ -620,6 +618,9 @@ This replaces polling and is what the web client and the app use when in the for
 `X-HamAlert-Delivery: <matched spot id>` for idempotency. Two retries on non-2xx; a destination
 that fails for 24 h is disabled and `lastError` is set on the destination. No query-string or
 form encoding, no legacy field names.
+
+**Limits.** The `total` limit is mandatory and capped at 100 alerts per hour; the three scoped
+limits are optional. That cap is what protects the push providers and the server.
 
 **Simulate.** `POST /simulate` with a minimal raw spot (callsign plus whatever the test needs).
 The server enriches and matches it for this account only, sends the alerts, and returns the
@@ -652,15 +653,15 @@ is username plus the Telnet password from destinations.
 - No WebSocket. SSE covers the push case with less machinery; the Telnet feed covers the rest.
 - No API rate limiting in the spec beyond `429` on the auth endpoints; that belongs to the
   gateway.
+- Dropped on purpose, as feature parity only (second review, §8): webhook GET and form-POST
+  methods (JSON POST only), Discourse forum single sign-on, "clear MySpot", Telnet login with
+  the account password, the `*` wildcard for "any IOTA group", trigger and user counts on the
+  stats page. Any of these can be added if asked for.
 
 ### 7.5 Open points
 
-- `bandSlot` names need the band plan table published in vocabularies; the current matcher's
-  `bandslot` list is the starting point.
 - `SimulatedSpot` is minimal; add fields as the simulator UI needs them.
 - The anti-spam registration question is kept; swap for a captcha if abuse returns.
-- Whether `Spot.rawText` is returned to clients or kept server-side (size, and it is the one field
-  that could leak a source's formatting quirks into the UI).
 
 ---
 
@@ -688,3 +689,36 @@ it was applied on 2026-10-18; the reasoning is recorded so the next person does 
 | Trigger `summitRegion` | `ASSOC/RG` | two-letter region code, as today |
 | Trigger `comment` | 100 chars | 1000 |
 | List conditions | 1000 callsigns, 5000 refs | 5000 everywhere |
+
+### Second review, 2026-10-18
+
+An adversarial review (pre-registered checklist, every field counted in the 116,536 spots, every
+claim traced to the PHP site, app or server code) ran after the maintainer's cuts. Findings
+that were only "today does it" were discarded, since neither compatibility nor feature parity
+is required. What remained:
+
+| Fixed | Was | Now |
+|---|---|---|
+| `bandSlot` | Described as a band-plan segment (`40m_cw`), which nothing produces and nobody asked for; the doc called it "the same thing" as today's condition | `<dxcc>_<band>`, the Club Log unworked-slot pair that `tools/updateBandslots.js` writes nightly; `options.clublogUnworked` is its writer |
+| Alerts pause | No endpoint | `Account.alertsEnabled`, settable via `PATCH /account` |
+| `Band` pattern | Rejected `3cm_qo100`, a band in today's config and editor and the only pattern violation in the data (3 spots) | Admits the `_suffix` form |
+| Mute semantics | "Matched against full callsign"; today's app passes the base call | `baseCallsign`; `mode` narrowing dropped (no client sends it) |
+| `total` limit | Nullable | Required, at most 100 per hour (today's server rule) |
+| `activity` condition | No default; absent would match QRT and link events | Absent means `[on-air]` |
+| Notification text | `display {title, body}` promised in prose, absent from the schema | On `MatchedSpot`, required; default templates in vocabularies |
+| `rawText` | "As received", but synthesised by us on 4.5% of spots | Only for line-based feeds |
+| `provenance` | Required, `{}` on 40% of spots | Optional, omitted when empty |
+
+| Removed | Evidence |
+|---|---|
+| `signal.speedUnit` | 43,339 values, all `wpm` |
+| `signal.spotType` | 42,204 `cq`, 16 `dx`; beacons never reach the converter |
+| `signal.senderLocator`, `signal.software`, `signal.spotterCount`, `spotter.locator`, `dstar.ber`, `dstar.silencePct` | 0 values in 116,536 spots |
+| `summit.valid` | 113 values, all `true` |
+| `entity.itu`, trigger `itu` | No editor has ever offered ITU zones |
+| `spotter.relay` | 204 of 233 values were DXSummit's `-@` web marker, not a relay |
+| `MuteInput.mode` | No client sends it |
+
+Kept despite "no consumer today", because the product is being built forward: `sourceId`,
+`client`, `spotter.instance`, summit and park coordinates, `parks[].locations`, cursor
+pagination, SSE resume, mute listing, session listing.

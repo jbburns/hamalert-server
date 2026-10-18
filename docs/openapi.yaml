@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: HamAlert API
-  version: 0.2.0
+  version: 0.3.0
   summary: Contract between the HamAlert backend and its web and mobile clients.
   description: |
     Draft 1, 2026-10-15. Derived from spot-model.md and the source research in research/. Spot and MatchedSpot
@@ -15,6 +15,8 @@ info:
     - Enum-like string fields that sources can extend (`mode`, `source`, provenance values) are
       open strings; clients must tolerate unknown values and treat unknown provenance as "not reported".
     - Values a feed did not report are marked in `provenance` (see spot-model.yaml); it is informational.
+    - Scope is the alerting product as it exists: no planned events, no satellites, no webhook GET or form
+      encoding, no forum single sign-on in this contract.
   license:
     name: MIT
     url: https://opensource.org/license/mit
@@ -224,7 +226,7 @@ paths:
     patch:
       operationId: patchAccount
       tags: [Account]
-      summary: Change the username
+      summary: Change the username or pause alerts
       requestBody:
         required: true
         content:
@@ -233,6 +235,7 @@ paths:
               type: object
               properties:
                 username: {type: string, pattern: '^[A-Za-z0-9-]{3,16}$'}
+                alertsEnabled: {type: boolean}
       responses:
         '200':
           description: Updated account; sessions stay valid
@@ -1047,10 +1050,11 @@ components:
     # ---------------------------------------------------------- account
     Account:
       type: object
-      required: [id, username, email, createdAt, triggerCount, maxTriggers]
+      required: [id, username, email, createdAt, alertsEnabled, triggerCount, maxTriggers]
       properties:
         id: {type: string}
         username: {type: string}
+        alertsEnabled: {type: boolean, description: "Master switch. false pauses every delivery (push, Telnet, webhook, Threema) while triggers stay intact"}
         email: {type: string, format: email}
         createdAt: {type: string, format: date-time}
         triggerCount: {type: integer}
@@ -1064,9 +1068,8 @@ components:
             invalid: {type: boolean, description: "Last Club Log call failed authentication"}
         myspot:
           type: object
-          required: [enabled, hmac]
+          required: [hmac]
           properties:
-            enabled: {type: boolean}
             hmac: {type: string, description: "Query token for /public/myspot"}
 
     # ---------------------------------------------------------- destinations
@@ -1151,9 +1154,10 @@ components:
         intervalSec: {type: integer, minimum: 60, maximum: 86400}
     LimitsInput:
       type: object
-      description: Each limit is "at most `count` alerts per `intervalSec`" in its scope; null disables that limit
+      description: Each limit is "at most `count` alerts per `intervalSec`" in its scope; null disables that limit. `total` cannot be disabled and may not exceed 100 alerts per hour (count * 3600 / intervalSec <= 100); otherwise 400.
+      required: [total]
       properties:
-        total: {oneOf: [{$ref: '#/components/schemas/RateLimit'}, {type: 'null'}]}
+        total: {$ref: '#/components/schemas/RateLimit'}
         perCallsign: {oneOf: [{$ref: '#/components/schemas/RateLimit'}, {type: 'null'}]}
         perCallsignBandMode: {oneOf: [{$ref: '#/components/schemas/RateLimit'}, {type: 'null'}]}
         perCallsignFrequencyMode: {oneOf: [{$ref: '#/components/schemas/RateLimit'}, {type: 'null'}]}
@@ -1183,7 +1187,7 @@ components:
       additionalProperties: false
       properties:
         source: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Source'}}
-        activity: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Activity'}}
+        activity: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Activity'}, description: "Absent means [on-air]: a trigger never matches qrt or monitoring spots unless it says so"}
         callsign: {type: array, minItems: 1, maxItems: 5000, items: {$ref: './spot-model.yaml#/components/schemas/Callsign'}, description: "Matches `baseCallsign`"}
         notCallsign: {type: array, minItems: 1, maxItems: 5000, items: {$ref: './spot-model.yaml#/components/schemas/Callsign'}}
         fullCallsign: {type: array, minItems: 1, maxItems: 5000, items: {$ref: './spot-model.yaml#/components/schemas/Callsign'}, description: "Matches `callsign` exactly"}
@@ -1192,7 +1196,7 @@ components:
         notPrefix: {type: array, minItems: 1, items: {type: string, pattern: '^[A-Z0-9/]{1,8}$'}}
         mode: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Mode'}}
         band: {type: array, minItems: 1, items: {$ref: '#/components/schemas/BandOrGroup'}, description: "Bands or band groups; groups expand to their bands at match time"}
-        bandSlot: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/BandSlot'}}
+        bandSlot: {type: array, minItems: 1, maxItems: 5000, items: {$ref: './spot-model.yaml#/components/schemas/BandSlot'}, description: "Unworked DXCC+band pairs. Written by options.clublogUnworked; editable by hand too"}
         spotter: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Callsign'}}
         notSpotter: {type: array, minItems: 1, items: {$ref: './spot-model.yaml#/components/schemas/Callsign'}}
         spotterPrefix: {type: array, minItems: 1, items: {type: string}}
@@ -1201,7 +1205,6 @@ components:
         spotterDxcc: {type: array, minItems: 1, items: {type: integer}}
         cq: {type: array, minItems: 1, items: {type: integer, minimum: 1, maximum: 40}}
         spotterCq: {type: array, minItems: 1, items: {type: integer, minimum: 1, maximum: 40}}
-        itu: {type: array, minItems: 1, items: {type: integer, minimum: 1, maximum: 90}}
         continent: {type: array, minItems: 1, items: {type: string, enum: [AF, AN, AS, EU, NA, OC, SA]}}
         spotterContinent: {type: array, minItems: 1, items: {type: string, enum: [AF, AN, AS, EU, NA, OC, SA]}}
         state: {type: array, minItems: 1, items: {type: string, pattern: '^[A-Z]{2}_[A-Z0-9]{2,3}$'}, description: 'e.g. US_CA, CA_ON'}
@@ -1230,13 +1233,18 @@ components:
       properties:
         clublogUnworked:
           type: object
-          description: Keep `conditions.dxcc` in sync with Club Log nightly
+          description: |
+            Nightly Club Log sync. Rewrites `conditions.bandSlot` with every DXCC+band pair the given
+            callsign has not worked (per `modes`, `status`, `dateFilter`) on the bands listed in
+            `conditions.band`, which is required. Requires a linked Club Log account.
           required: [callsign]
           properties:
             callsign: {$ref: './spot-model.yaml#/components/schemas/Callsign'}
             modes: {type: string, enum: [all, cw, phone, data], default: all}
             status: {type: array, items: {type: string, enum: [worked, confirmed, verified]}}
             dateFilter: {type: string, enum: [all, last12months, thisYear, lastYear], default: all}
+            lastUpdatedAt: {type: string, format: date-time, readOnly: true}
+            slotCount: {type: integer, readOnly: true, description: Size of the current bandSlot list}
         sotaCompleteAuto:
           type: boolean
           default: false
@@ -1275,9 +1283,8 @@ components:
       type: object
       required: [callsign, durationMin]
       properties:
-        callsign: {$ref: './spot-model.yaml#/components/schemas/Callsign', description: "Matched against `callsign` (full)"}
+        callsign: {$ref: './spot-model.yaml#/components/schemas/Callsign', description: "Matched against `baseCallsign`, so muting HB9DQM silences HB9DQM/P too"}
         band: {$ref: './spot-model.yaml#/components/schemas/Band'}
-        mode: {$ref: './spot-model.yaml#/components/schemas/Mode'}
         summitRef: {$ref: './spot-model.yaml#/components/schemas/SummitCode'}
         durationMin: {type: integer, minimum: 1, maximum: 10080}
     Mute:
@@ -1338,17 +1345,17 @@ components:
     # ---------------------------------------------------------- reference
     Vocabularies:
       type: object
-      required: [bands, bandSlots, modes, sources, actions, continents, registrationQuestion]
+      required: [bands, bandGroups, modes, sources, actions, continents, registrationQuestion, defaultAppTemplates]
       properties:
         bands: {type: array, items: {type: object, required: [band, fromHz, toHz], properties: {band: {$ref: './spot-model.yaml#/components/schemas/Band'}, fromHz: {type: integer}, toHz: {type: integer}}}}
         bandGroups: {type: array, items: {type: object, required: [group, bands], properties: {group: {type: string}, bands: {type: array, items: {$ref: './spot-model.yaml#/components/schemas/Band'}}}}}
-        bandSlots: {type: array, items: {type: object, required: [slot, band, fromHz, toHz], properties: {slot: {$ref: './spot-model.yaml#/components/schemas/BandSlot'}, band: {$ref: './spot-model.yaml#/components/schemas/Band'}, fromHz: {type: integer}, toHz: {type: integer}}}}
         modes: {type: array, items: {type: object, required: [mode], properties: {mode: {$ref: './spot-model.yaml#/components/schemas/Mode'}, label: {type: string}, details: {type: array, items: {type: string}}}}}
         sources: {type: array, items: {type: object, required: [source, label], properties: {source: {$ref: './spot-model.yaml#/components/schemas/Source'}, label: {type: string}, url: {type: string}}}}
         actions: {type: array, items: {$ref: './spot-model.yaml#/components/schemas/Action'}}
         continents: {type: array, items: {type: string}}
         states: {type: array, items: {type: object, required: [code, name], properties: {code: {type: string}, name: {type: string}}}}
         registrationQuestion: {type: string}
+        defaultAppTemplates: {type: object, required: [titleTemplate, bodyTemplate], properties: {titleTemplate: {type: string}, bodyTemplate: {type: string}}}
     EntityInfo:
       allOf:
         - $ref: './spot-model.yaml#/components/schemas/Entity'
